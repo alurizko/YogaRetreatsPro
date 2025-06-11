@@ -11,10 +11,9 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 
-if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
-  throw new Error('Missing required Stripe key: VITE_STRIPE_PUBLIC_KEY');
-}
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
+const stripePromise = import.meta.env.VITE_STRIPE_PUBLIC_KEY 
+  ? loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
+  : null;
 
 const CheckoutForm = ({ retreat, participants }: { retreat: any; participants: number }) => {
   const stripe = useStripe();
@@ -140,6 +139,22 @@ export default function Checkout() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-forest-green mb-4">Ретрит не найден</h1>
+          <Link href="/retreats">
+            <Button>Вернуться к поиску</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!stripePromise) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold text-forest-green mb-4">Платежи временно недоступны</h1>
+          <p className="text-soft-gray mb-6">
+            Извините, функция оплаты временно недоступна. Пожалуйста, свяжитесь с поддержкой для завершения бронирования.
+          </p>
           <Link href="/retreats">
             <Button>Вернуться к поиску</Button>
           </Link>

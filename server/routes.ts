@@ -5,13 +5,15 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertRetreatSchema, insertBookingSchema, insertRefundRequestSchema } from "@shared/schema";
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
-}
+let stripe: Stripe | null = null;
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2023-10-16",
-});
+if (process.env.STRIPE_SECRET_KEY) {
+  stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: "2025-05-28.basil",
+  });
+} else {
+  console.warn('Warning: STRIPE_SECRET_KEY not configured. Payment functionality will be disabled.');
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -121,6 +123,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Stripe payment routes
   app.post("/api/create-payment-intent", isAuthenticated, async (req: any, res) => {
     try {
+      if (!stripe) {
+        return res.status(503).json({ message: "Payment processing is currently unavailable. Please contact support." });
+      }
+
       const { retreatId, participants } = req.body;
       const userId = req.user.claims.sub;
 
@@ -154,6 +160,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/confirm-booking", isAuthenticated, async (req: any, res) => {
     try {
+      if (!stripe) {
+        return res.status(503).json({ message: "Payment processing is currently unavailable. Please contact support." });
+      }
+
       const { paymentIntentId, retreatId, participants } = req.body;
       const userId = req.user.claims.sub;
 
@@ -236,6 +246,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       if (approved) {
+        if (!stripe) {
+          return res.status(503).json({ message: "Payment processing is currently unavailable. Cannot process refund." });
+        }
+
         // Process Stripe refund
         const refund = await stripe.refunds.create({
           payment_intent: booking.stripePaymentIntentId!,
