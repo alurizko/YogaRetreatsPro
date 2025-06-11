@@ -1,0 +1,275 @@
+import { useState } from "react";
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { Search, Check, Star, MapPin, Clover } from "lucide-react";
+import RetreatCard from "@/components/RetreatCard";
+import type { Retreat } from "@shared/schema";
+
+export default function Home() {
+  const [searchLocation, setSearchLocation] = useState("");
+  const [searchDate, setSearchDate] = useState("");
+  const [searchDuration, setSearchDuration] = useState("");
+
+  const { data: retreats = [], isLoading } = useQuery({
+    queryKey: ["/api/retreats"],
+  });
+
+  const featuredRetreats = retreats.slice(0, 3);
+
+  return (
+    <main className="bg-soft-white">
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-r from-forest-green to-sage-green">
+        <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+        <div 
+          style={{
+            backgroundImage: "url('https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1920&h=800')",
+            backgroundSize: "cover",
+            backgroundPosition: "center"
+          }}
+          className="relative h-96 md:h-[500px] flex items-center"
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white relative z-10">
+            <h1 className="text-3xl md:text-5xl font-bold mb-6">
+              Найдите свой идеальный<br />
+              <span className="text-warm-orange">ретрит по йоге</span>
+            </h1>
+            <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto opacity-90">
+              Присоединяйтесь к тысячам практикующих в уникальных местах по всему миру
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/retreats">
+                <Button size="lg" className="bg-warm-orange hover:bg-warm-orange/90 text-white px-8 py-3 text-lg font-semibold">
+                  Найти ретрит
+                </Button>
+              </Link>
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="border-2 border-white text-white bg-transparent hover:bg-white hover:text-forest-green px-8 py-3 text-lg font-semibold"
+                onClick={() => window.location.href = "/api/login"}
+              >
+                Стать организатором
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Search Filters */}
+      <section className="bg-white shadow-lg -mt-8 relative z-10 mx-4 lg:mx-8 rounded-xl">
+        <div className="max-w-6xl mx-auto p-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-soft-gray mb-2">Место проведения</label>
+              <Input 
+                placeholder="Куда хотите поехать?" 
+                value={searchLocation}
+                onChange={(e) => setSearchLocation(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-soft-gray mb-2">Дата начала</label>
+              <Input 
+                type="date" 
+                value={searchDate}
+                onChange={(e) => setSearchDate(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-soft-gray mb-2">Продолжительность</label>
+              <Select value={searchDuration} onValueChange={setSearchDuration}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Любая" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="any">Любая</SelectItem>
+                  <SelectItem value="1-3">1-3 дня</SelectItem>
+                  <SelectItem value="4-7">4-7 дней</SelectItem>
+                  <SelectItem value="1-2w">1-2 недели</SelectItem>
+                  <SelectItem value="2w+">Больше 2 недель</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-end">
+              <Link href="/retreats" className="w-full">
+                <Button className="w-full bg-forest-green hover:bg-forest-green/90 text-white font-semibold">
+                  <Search className="w-4 h-4 mr-2" />
+                  Искать
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Retreats */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-forest-green mb-4">Популярные ретриты</h2>
+          <p className="text-lg text-soft-gray max-w-2xl mx-auto">
+            Откройте для себя лучшие ретриты по йоге от проверенных организаторов
+          </p>
+        </div>
+
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div className="w-full h-48 bg-gray-200 animate-pulse"></div>
+                <div className="p-6 space-y-3">
+                  <div className="h-6 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+            {featuredRetreats.map((retreat: Retreat) => (
+              <RetreatCard key={retreat.id} retreat={retreat} />
+            ))}
+          </div>
+        )}
+
+        <div className="text-center">
+          <Link href="/retreats">
+            <Button size="lg" className="bg-forest-green hover:bg-forest-green/90 text-white px-8 py-3 text-lg font-semibold">
+              Посмотреть все ретриты
+            </Button>
+          </Link>
+        </div>
+      </section>
+
+      {/* For Organizers */}
+      <section className="bg-gray-50 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <img 
+                src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
+                alt="Yoga instructor teaching" 
+                className="rounded-xl shadow-lg w-full h-auto"
+              />
+            </div>
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-forest-green mb-6">
+                Станьте организатором ретритов
+              </h2>
+              <p className="text-lg text-soft-gray mb-8">
+                Делитесь своими знаниями йоги и создавайте незабываемые впечатления для практикующих со всего мира
+              </p>
+              <div className="space-y-4 mb-8">
+                {[
+                  "Простое управление бронированиями",
+                  "Автоматическая обработка платежей",
+                  "Гибкая система возвратов",
+                  "Поддержка 24/7"
+                ].map((feature, index) => (
+                  <div key={index} className="flex items-center">
+                    <Check className="text-sage-green mr-3 w-5 h-5" />
+                    <span>{feature}</span>
+                  </div>
+                ))}
+              </div>
+              <Button 
+                size="lg"
+                className="bg-warm-orange hover:bg-warm-orange/90 text-white px-8 py-3 text-lg font-semibold"
+                onClick={() => window.location.href = "/api/login"}
+              >
+                Начать организовывать
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-forest-green mb-4">Как это работает</h2>
+            <p className="text-lg text-soft-gray max-w-2xl mx-auto">
+              Простой процесс от поиска до участия в ретрите
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: Search,
+                title: "1. Найдите ретрит",
+                description: "Используйте наши фильтры для поиска идеального ретрита по местоположению, дате и стилю йоги",
+                color: "bg-sage-green"
+              },
+              {
+                icon: MapPin,
+                title: "2. Забронируйте место",
+                description: "Безопасная оплата через Stripe с возможностью возврата средств при необходимости",
+                color: "bg-warm-orange"
+              },
+              {
+                icon: Clover,
+                title: "3. Наслаждайтесь",
+                description: "Погрузитесь в практику йоги и получите незабываемые впечатления",
+                color: "bg-forest-green"
+              }
+            ].map((step, index) => (
+              <div key={index} className="text-center">
+                <div className={`${step.color} bg-opacity-20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4`}>
+                  <step.icon className={`text-2xl w-8 h-8`} style={{ color: `var(--${step.color.split('-')[1]}-${step.color.split('-')[2]})` }} />
+                </div>
+                <h3 className="text-xl font-semibold text-forest-green mb-3">{step.title}</h3>
+                <p className="text-soft-gray">{step.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-forest-green text-white py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="md:col-span-2">
+              <div className="text-2xl font-bold mb-4 flex items-center">
+                <Clover className="mr-2" />
+                YogaRetreat
+              </div>
+              <p className="text-gray-300 mb-4 max-w-md">
+                Ваша платформа для поиска и организации ретритов по йоге. Соединяем практикующих с лучшими инструкторами и местами по всему миру.
+              </p>
+            </div>
+
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Быстрые ссылки</h4>
+              <ul className="space-y-2">
+                <li><Link href="/retreats" className="text-gray-300 hover:text-white transition-colors">Найти ретрит</Link></li>
+                <li><a href="/api/login" className="text-gray-300 hover:text-white transition-colors">Стать организатором</a></li>
+                <li><Link href="/" className="text-gray-300 hover:text-white transition-colors">О нас</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Поддержка</h4>
+              <ul className="space-y-2">
+                <li><Link href="/" className="text-gray-300 hover:text-white transition-colors">Политика возврата</Link></li>
+                <li><Link href="/" className="text-gray-300 hover:text-white transition-colors">Условия использования</Link></li>
+                <li><Link href="/" className="text-gray-300 hover:text-white transition-colors">Политика конфиденциальности</Link></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-600 pt-8 mt-8 text-center text-gray-300">
+            <p>&copy; 2024 YogaRetreat. Все права защищены.</p>
+          </div>
+        </div>
+      </footer>
+    </main>
+  );
+}
