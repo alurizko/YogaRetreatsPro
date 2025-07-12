@@ -12,7 +12,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { insertRetreatSchema } from "@shared/schema";
+import { insertRetreatSchema } from "../../../shared/schema";
 import type { Retreat } from "@shared/schema";
 import { z } from "zod";
 
@@ -25,7 +25,7 @@ export default function OrganizerDashboard() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const { toast } = useToast();
 
-  const { data: retreats = [], isLoading } = useQuery({
+  const { data: retreats = [], isLoading } = useQuery<Retreat[]>({
     queryKey: ["/api/organizer/retreats"],
   });
 
@@ -209,7 +209,7 @@ export default function OrganizerDashboard() {
                       <FormItem>
                         <FormLabel>URL изображения (необязательно)</FormLabel>
                         <FormControl>
-                          <Input placeholder="https://example.com/image.jpg" {...field} />
+                          <Input placeholder="https://example.com/image.jpg" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
