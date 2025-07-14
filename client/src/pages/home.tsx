@@ -49,59 +49,61 @@ export default function Home() {
       </section>
 
       {/* Search Filters */}
-      <div className="max-w-7xl mx-auto px-[40px] bg-[#fff6f0] rounded-xl shadow-lg py-6">
-        <div className="grid grid-cols-5 gap-[40px] items-end w-full">
-          {/* 1. Место проведения — col-start-2 */}
-          <div className="col-start-2 col-end-3 flex flex-col items-center text-center">
-            <label className="block text-sm font-semibold text-soft-gray mb-2 text-center">Место проведения</label>
-            <Input 
-              className="bg-warm-orange text-black"
-              placeholder="Куда хотите поехать?" 
-              value={searchLocation}
-              onChange={(e) => setSearchLocation(e.target.value)}
-            />
-          </div>
-          {/* 2. Дата начала — col-start-3 */}
-          <div className="col-start-3 col-end-4 flex flex-col items-center text-center">
-            <label className="block text-sm font-semibold text-soft-gray mb-2 text-center">Дата начала</label>
-            <Input 
-              className="bg-warm-orange text-black"
-              type="date" 
-              value={searchDate}
-              onChange={(e) => setSearchDate(e.target.value)}
-            />
-          </div>
-          {/* 3. Продолжительность — col-start-4 */}
-          <div className="col-start-4 col-end-5 flex flex-col items-center text-center">
-            <label className="block text-sm font-semibold text-soft-gray mb-2 text-center">Продолжительность</label>
-            <Select value={searchDuration} onValueChange={setSearchDuration}>
-              <SelectTrigger className="bg-warm-orange text-black">
-                <SelectValue placeholder="Любая" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="any">Любая</SelectItem>
-                <SelectItem value="1-3">1-3 дня</SelectItem>
-                <SelectItem value="4-7">4-7 дней</SelectItem>
-                <SelectItem value="1-2w">1-2 недели</SelectItem>
-                <SelectItem value="2w+">Больше 2 недель</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          {/* Кнопка поиска */}
-          <div className="flex items-end justify-center">
-            <Link href="/retreats" className="w-full">
-              <Button className="w-full bg-warm-orange hover:bg-warm-orange/90 text-black font-semibold">
-                <Search className="w-4 h-4 mr-2" />
-                Искать
-              </Button>
-            </Link>
+      <section className="bg-[#fff6f0]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-4 gap-[40px] items-end w-full bg-[#fff6f0] rounded-2xl py-8 px-6 justify-items-center">
+            {/* 1. Место проведения */}
+            <div className="flex flex-col items-center text-center w-full">
+              <label className="block text-sm font-semibold text-soft-gray mb-2">Место проведения</label>
+              <Input 
+                className="bg-warm-orange text-black w-full"
+                placeholder="Куда хотите поехать?" 
+                value={searchLocation}
+                onChange={(e) => setSearchLocation(e.target.value)}
+              />
+            </div>
+            {/* 2. Дата начала */}
+            <div className="flex flex-col items-center text-center w-full">
+              <label className="block text-sm font-semibold text-soft-gray mb-2">Дата начала</label>
+              <Input 
+                className="bg-warm-orange text-black w-full"
+                type="date" 
+                value={searchDate}
+                onChange={(e) => setSearchDate(e.target.value)}
+              />
+            </div>
+            {/* 3. Продолжительность */}
+            <div className="flex flex-col items-center text-center w-full">
+              <label className="block text-sm font-semibold text-soft-gray mb-2">Продолжительность</label>
+              <Select value={searchDuration} onValueChange={setSearchDuration}>
+                <SelectTrigger className="bg-warm-orange text-black w-full">
+                  <SelectValue placeholder="Любая" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="any">Любая</SelectItem>
+                  <SelectItem value="1-3">1-3 дня</SelectItem>
+                  <SelectItem value="4-7">4-7 дней</SelectItem>
+                  <SelectItem value="1-2w">1-2 недели</SelectItem>
+                  <SelectItem value="2w+">Больше 2 недель</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {/* 4. Кнопка поиска */}
+            <div className="flex items-end justify-center w-full">
+              <Link href="/retreats" className="w-full">
+                <Button className="w-full bg-warm-orange hover:bg-warm-orange/90 text-black font-semibold">
+                  <Search className="w-4 h-4 mr-2" />
+                  Искать
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Featured Retreats */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 bg-[#fff6f0]">
-        <div className="text-center mb-12">
+      <section className="px-4 sm:px-6 lg:px-8 py-16 bg-[#fff6f0]">
+        <div className="max-w-7xl mx-auto text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-forest-green mb-4">Популярные ретриты</h2>
           <p className="text-lg text-soft-gray max-w-2xl mx-auto">
             Откройте для себя лучшие ретриты по йоге от проверенных организаторов
@@ -212,7 +214,7 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-semibold text-forest-green mb-3">2. Забронируйте место</h3>
               <p className="text-soft-gray">Безопасная оплата через Stripe с возможностью возврата средств при необходимости</p>
-            </div>
+                </div>
             {/* 4. Пусто */}
             <div></div>
             {/* 5. Наслаждайтесь — под 'Войти' */}
@@ -227,10 +229,12 @@ export default function Home() {
         </div>
       </section>
 
+      <div className="w-full border-t-2 border-sage-green-200 my-0 bg-[#fff6f0]"></div>
+
       {/* Footer */}
       <footer className="bg-[#fff6f0] text-forest-green py-12">
         <div className="max-w-7xl mx-auto px-[40px]">
-          <div className="grid grid-cols-5" style={{gridTemplateColumns: 'repeat(5, 1fr)'}}>
+          <div className="grid grid-cols-5" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
             {/* 1. Логотип — строго по левому краю */}
             <div className="flex flex-col items-start text-left">
               <div className="text-2xl font-bold mb-4 flex items-center">

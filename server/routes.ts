@@ -4,6 +4,11 @@ import Stripe from "stripe";
 import { storage } from "./storage";
 // Удалён импорт setupAuth, isAuthenticated из ./replitAuth
 import { insertRetreatSchema, insertBookingSchema, insertRefundRequestSchema } from "@shared/schema";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { users } from "@shared/schema";
+import { eq } from "drizzle-orm";
+import { db } from "./db";
 
 let stripe: Stripe | null = null;
 
@@ -28,6 +33,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Регистрация пользователя
+  app.post('/api/register', async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email и пароль обязательны" });
+      }
+      // Проверка, что email не занят
+      const existing = await db.select().from(users).where(eq(users.email, email));
+      if (existing.length > 0) {
+        return res.status(400).json({ message: "Email уже зарегистрирован" });
+      }
+      // Хэширование пароля
+      const password_hash = await bcrypt.hash(password, 10);
+      // Создание пользователя
+      const [user] = await db.insert(users).values({
+        email,
+        password_hash,
+        role: "user",
+      }).returning();
+      // Генерация JWT
+      const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET!, { expiresIn: "7d" });
+      res.json({ token, user: { id: user.id, email: user.email } });
+    } catch (error) {
+      console.error("Registration error:", error);
+      res.status(500).json({ message: "Ошибка регистрации" });
+    }
+  });
+
+  // Вход пользователя
+  app.post('/api/login', async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email и пароль обязательны" });
+      }
+      // Поиск пользователя
+      const existing = await db.select().from(users).where(eq(users.email, email));
+      if (existing.length === 0) {
+        return res.status(400).json({ message: "Пользователь не найден" });
+      }
+      const user = existing[0];
+      // Проверка пароля
+      const valid = await bcrypt.compare(password, user.password_hash);
+      if (!valid) {
+        return res.status(400).json({ message: "Неверный пароль" });
+      }
+      // Генерация JWT
+      const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET!, { expiresIn: "7d" });
+      res.json({ token, user: { id: user.id, email: user.email } });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ message: "Ошибка входа" });
     }
   });
 
