@@ -61,7 +61,7 @@ export const retreats = pgTable("retreats", {
 export const bookings = pgTable("bookings", {
   id: serial("id").primaryKey(),
   retreatId: integer("retreat_id").notNull().references(() => retreats.id),
-  participantId: varchar("participant_id").notNull().references(() => users.id),
+  participant_id: varchar("participant_id").notNull().references(() => users.id),
   participants: integer("participants").notNull().default(1),
   totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
   status: varchar("status").notNull().default("confirmed"), // 'pending' | 'confirmed' | 'cancelled' | 'refunded'

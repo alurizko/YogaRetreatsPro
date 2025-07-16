@@ -39,21 +39,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Регистрация пользователя
   app.post('/api/register', async (req, res) => {
     try {
-      const { email, password } = req.body;
-      if (!email || !password) {
-        return res.status(400).json({ message: "Email и пароль обязательны" });
+      const { firstName, lastName, email, password } = req.body;
+      if (!firstName || !lastName || !email || !password) {
+        return res.status(400).json({ message: "Имя, фамилия, email и пароль обязательны" });
       }
       // Проверка, что email не занят
       const existing = await db.select().from(users).where(eq(users.email, email));
       if (existing.length > 0) {
         return res.status(400).json({ message: "Email уже зарегистрирован" });
       }
-      // Хэширование пароля
-      const password_hash = await bcrypt.hash(password, 10);
+      // Генерация уникального id
+      const id = crypto.randomUUID();
       // Создание пользователя
       const [user] = await db.insert(users).values({
+        id,
+        firstName,
+        lastName,
         email,
-        password_hash,
         role: "user",
       }).returning();
       // Генерация JWT
@@ -79,7 +81,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const user = existing[0];
       // Проверка пароля
-      const valid = await bcrypt.compare(password, user.password_hash);
+      const valid = await bcrypt.compare(password, (user as any).password_hash);
       if (!valid) {
         return res.status(400).json({ message: "Неверный пароль" });
       }

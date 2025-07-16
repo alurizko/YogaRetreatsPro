@@ -146,13 +146,15 @@ export default function Header() {
               setRegisterError("");
               setRegisterLoading(true);
               const form = e.target as HTMLFormElement;
-              const email = (form[0] as HTMLInputElement).value;
-              const password = (form[1] as HTMLInputElement).value;
+              const firstName = (form[0] as HTMLInputElement).value;
+              const lastName = (form[1] as HTMLInputElement).value;
+              const email = (form[2] as HTMLInputElement).value;
+              const password = (form[3] as HTMLInputElement).value;
               try {
                 const res = await fetch("/api/register", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ email, password })
+                  body: JSON.stringify({ firstName, lastName, email, password, role: "user" })
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.message || "Ошибка регистрации");
@@ -165,6 +167,18 @@ export default function Header() {
                 setRegisterLoading(false);
               }
             }}>
+              <input
+                type="text"
+                placeholder="Имя"
+                className="w-full border rounded px-4 py-2"
+                required
+              />
+              <input
+                type="text"
+                placeholder="Фамилия"
+                className="w-full border rounded px-4 py-2"
+                required
+              />
               <input
                 type="email"
                 placeholder="Email"

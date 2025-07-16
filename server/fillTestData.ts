@@ -44,9 +44,9 @@ async function fillTestData() {
 
   // Добавление бронирований
   await db.insert(bookings).values([
-    { user_id: 1, retreat_id: 1 },
-    { user_id: 1, retreat_id: 2 },
-    { user_id: 3, retreat_id: 1 },
+    { participant_id: 1, retreat_id: 1 },
+    { participant_id: 1, retreat_id: 2 },
+    { participant_id: 3, retreat_id: 1 },
   ]);
 
   // Добавление отзывов
