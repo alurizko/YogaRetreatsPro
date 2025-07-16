@@ -33,6 +33,7 @@ export const users = pgTable("users", {
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role").notNull().default("participant"), // 'participant' | 'organizer'
+  password_hash: varchar("password_hash"),
   stripeCustomerId: varchar("stripe_customer_id"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -86,6 +87,39 @@ export const refundRequests = pgTable("refund_requests", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Instructors table
+export const instructors = pgTable("instructors", {
+  id: serial("id").primaryKey(),
+  firstName: varchar("first_name").notNull(),
+  lastName: varchar("last_name").notNull(),
+  bio: text("bio"),
+  photoUrl: varchar("photo_url"),
+});
+
+// Retreat-Instructors join table
+export const retreat_instructors = pgTable("retreat_instructors", {
+  id: serial("id").primaryKey(),
+  retreat_id: integer("retreat_id").notNull().references(() => retreats.id),
+  instructor_id: integer("instructor_id").notNull().references(() => instructors.id),
+});
+
+// Reviews table
+export const reviews = pgTable("reviews", {
+  id: serial("id").primaryKey(),
+  user_id: varchar("user_id").notNull().references(() => users.id),
+  retreat_id: integer("retreat_id").notNull().references(() => retreats.id),
+  rating: integer("rating").notNull(),
+  comment: text("comment"),
+});
+
+// Blog posts table
+export const blog_posts = pgTable("blog_posts", {
+  id: serial("id").primaryKey(),
+  author_id: varchar("author_id").notNull().references(() => users.id),
+  title: varchar("title").notNull(),
+  content: text("content").notNull(),
+});
+
 // Type exports
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -124,4 +158,3 @@ export const insertRefundRequestSchema = createInsertSchema(refundRequests).omit
   createdAt: true,
   updatedAt: true,
 });
-// обновление для нового коммита

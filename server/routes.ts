@@ -50,6 +50,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       // Генерация уникального id
       const id = crypto.randomUUID();
+      // Хеширование пароля
+      const password_hash = await bcrypt.hash(password, 10);
       // Создание пользователя
       const [user] = await db.insert(users).values({
         id,
@@ -57,6 +59,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lastName,
         email,
         role: "user",
+        password_hash,
       }).returning();
       // Генерация JWT
       const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET!, { expiresIn: "7d" });
@@ -70,22 +73,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Вход пользователя
   app.post('/api/login', async (req, res) => {
     try {
+      // Получаем email и пароль из тела запроса
       const { email, password } = req.body;
       if (!email || !password) {
         return res.status(400).json({ message: "Email и пароль обязательны" });
       }
-      // Поиск пользователя
+      // Поиск пользователя по email
       const existing = await db.select().from(users).where(eq(users.email, email));
       if (existing.length === 0) {
         return res.status(400).json({ message: "Пользователь не найден" });
       }
       const user = existing[0];
-      // Проверка пароля
+      // Проверка наличия хэша пароля
+      if (!user.password_hash) {
+        return res.status(400).json({ message: "У пользователя отсутствует пароль. Обратитесь к администратору." });
+      }
+      // Сравнение пароля с хэшем
       const valid = await bcrypt.compare(password, (user as any).password_hash);
       if (!valid) {
         return res.status(400).json({ message: "Неверный пароль" });
       }
-      // Генерация JWT
+      // Генерация JWT-токена
       const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET!, { expiresIn: "7d" });
       res.json({ token, user: { id: user.id, email: user.email } });
     } catch (error) {
@@ -293,7 +301,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // (удалён временный эндпоинт /api/delete-user)
+
   const httpServer = createServer(app);
   return httpServer;
 }
-// обновление для нового коммита

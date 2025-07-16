@@ -10,6 +10,7 @@ import { CalendarDays, MapPin, Users, Euro, ArrowLeft } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
+import type { Retreat } from "@shared/schema";
 
 const stripePromise = import.meta.env.VITE_STRIPE_PUBLIC_KEY 
   ? loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
@@ -101,7 +102,7 @@ export default function Checkout() {
     }
   }, []);
 
-  const { data: retreat, isLoading } = useQuery({
+  const { data: retreat, isLoading } = useQuery<Retreat>({
     queryKey: [`/api/retreats/${retreatId}`],
     enabled: !!retreatId,
   });

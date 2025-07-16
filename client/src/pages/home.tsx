@@ -14,7 +14,7 @@ export default function Home() {
   const [searchDate, setSearchDate] = useState("");
   const [searchDuration, setSearchDuration] = useState("");
 
-  const { data: retreats = [], isLoading } = useQuery({
+  const { data: retreats = [], isLoading } = useQuery<Retreat[]>({
     queryKey: ["/api/retreats"],
   });
 

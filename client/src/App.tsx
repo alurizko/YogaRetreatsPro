@@ -37,6 +37,7 @@ function Router() {
         {isAuthenticated && (
           <>
             <Route path="/participant/dashboard" component={ParticipantDashboard} />
+            <Route path="/participant-dashboard" component={ParticipantDashboard} />
             <Route path="/checkout/:retreatId" component={Checkout} />
           </>
         )}

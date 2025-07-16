@@ -12,7 +12,7 @@ export default function RetreatDetail() {
   const { id } = useParams();
   const { isAuthenticated } = useAuth();
 
-  const { data: retreat, isLoading } = useQuery({
+  const { data: retreat, isLoading } = useQuery<Retreat>({
     queryKey: [`/api/retreats/${id}`],
     enabled: !!id,
   });
