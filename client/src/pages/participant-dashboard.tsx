@@ -14,6 +14,12 @@ const ParticipantDashboard = () => {
     }
   } catch {}
 
+  // Если email не найден в JWT, пробуем получить из query-параметра
+  if (!email && typeof window !== 'undefined') {
+    const params = new URLSearchParams(window.location.search);
+    email = params.get('email') || "";
+  }
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     setLocation("/");

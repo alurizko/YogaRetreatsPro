@@ -54,6 +54,9 @@ import jwt from "jsonwebtoken";
 import { users } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { db } from "./db";
+import passport from "passport";
+import session from "express-session";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 var stripe = null;
 if (process.env.STRIPE_SECRET_KEY) {
     stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -68,6 +71,47 @@ export function registerRoutes(app) {
         var httpServer;
         var _this = this;
         return __generator(this, function (_a) {
+            // Настройка express-session и passport
+            app.use(session({
+                secret: process.env.SESSION_SECRET || "your_secret",
+                resave: false,
+                saveUninitialized: false,
+            }));
+            app.use(passport.initialize());
+            app.use(passport.session());
+            // Настройка стратегии Google
+            passport.use(new GoogleStrategy({
+                clientID: process.env.GOOGLE_CLIENT_ID,
+                clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+                callbackURL: process.env.GOOGLE_CALLBACK_URL || "http://localhost:5000/api/auth/google/callback"
+            }, function (accessToken, refreshToken, profile, done) { return __awaiter(_this, void 0, void 0, function () {
+                var user;
+                var _a, _b, _c;
+                return __generator(this, function (_d) {
+                    user = {
+                        id: profile.id,
+                        email: (_a = profile.emails) === null || _a === void 0 ? void 0 : _a[0].value,
+                        firstName: (_b = profile.name) === null || _b === void 0 ? void 0 : _b.givenName,
+                        lastName: (_c = profile.name) === null || _c === void 0 ? void 0 : _c.familyName,
+                        role: "participant"
+                    };
+                    // Можно добавить сохранение в БД, если нужно
+                    return [2 /*return*/, done(null, user)];
+                });
+            }); }));
+            passport.serializeUser(function (user, done) {
+                done(null, user);
+            });
+            passport.deserializeUser(function (user, done) {
+                done(null, user);
+            });
+            // Google OAuth маршруты
+            app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+            app.get('/api/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login', session: false }), function (req, res) {
+                // Пример: редирект на фронт с email
+                var user = req.user;
+                res.redirect("/participant-dashboard?email=".concat(encodeURIComponent(user.email)));
+            });
             // Удалён вызов setupAuth(app);
             // Удалить или заменить все использования isAuthenticated на (req, res, next) => next() для теста
             // Auth routes

@@ -48,10 +48,15 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 import express from "express";
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
+import { dirname as pathDirname } from "path";
 import { createServer as createViteServer, createLogger } from "vite";
 import viteConfig from "../vite.config";
 import { nanoid } from "nanoid";
 var viteLogger = createLogger();
+// Получаем __dirname для ESM
+var __filename = fileURLToPath(import.meta.url);
+var __dirname = pathDirname(__filename);
 export function log(message, source) {
     if (source === void 0) { source = "express"; }
     var formattedTime = new Date().toLocaleTimeString("en-US", {
@@ -90,7 +95,7 @@ export function setupVite(app, server) {
                                     _a.label = 1;
                                 case 1:
                                     _a.trys.push([1, 4, , 5]);
-                                    clientTemplate = path.resolve(import.meta.dirname, "..", "client", "index.html");
+                                    clientTemplate = path.resolve(__dirname, "..", "client", "index.html");
                                     return [4 /*yield*/, fs.promises.readFile(clientTemplate, "utf-8")];
                                 case 2:
                                     template = _a.sent();
@@ -116,7 +121,7 @@ export function setupVite(app, server) {
 }
 export function serveStatic(app) {
     // Исправлено: теперь Express обслуживает client/dist
-    var distPath = path.resolve(import.meta.dirname, "..", "client", "dist");
+    var distPath = path.resolve(__dirname, "..", "client", "dist");
     if (!fs.existsSync(distPath)) {
         throw new Error("Could not find the build directory: ".concat(distPath, ", make sure to build the client first"));
     }

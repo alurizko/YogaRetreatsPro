@@ -1,7 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import Stripe from "stripe";
-import { storage } from "./storage";
 // Удалён импорт setupAuth, isAuthenticated из ./replitAuth
 import { insertRetreatSchema, insertBookingSchema, insertRefundRequestSchema } from "@shared/schema";
 import bcrypt from "bcryptjs";
@@ -9,6 +8,10 @@ import jwt from "jsonwebtoken";
 import { users } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { db } from "./db";
+import passport from "passport";
+import session from "express-session";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import cookieParser from "cookie-parser";
 
 let stripe: Stripe | null = null;
 
@@ -21,6 +24,61 @@ if (process.env.STRIPE_SECRET_KEY) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Настройка express-session и passport
+  app.use(session({
+    secret: process.env.SESSION_SECRET || "your_secret",
+    resave: false,
+    saveUninitialized: false,
+  }));
+  app.use(cookieParser());
+  app.use(passport.initialize());
+  app.use(passport.session());
+
+  // Настройка стратегии Google
+  passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID!,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    callbackURL: process.env.GOOGLE_CALLBACK_URL || "http://localhost:5000/api/auth/google/callback"
+  },
+    async (accessToken: string, refreshToken: string, profile: any, done: any) => {
+      // Минимальная интеграция: пользователь создаётся на лету
+      let user = {
+        id: profile.id,
+        email: profile.emails?.[0].value,
+        firstName: profile.name?.givenName,
+        lastName: profile.name?.familyName,
+        role: "participant"
+      };
+      // Можно добавить сохранение в БД, если нужно
+      return done(null, user);
+    }
+  ));
+  passport.serializeUser((user: any, done) => {
+    done(null, user);
+  });
+  passport.deserializeUser((user: any, done) => {
+    done(null, user);
+  });
+
+  // Google OAuth маршруты
+  app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+  app.get('/api/auth/google/callback',
+    passport.authenticate('google', { failureRedirect: '/login', session: false }),
+    (req, res) => {
+      const user = req.user as any;
+      // Генерируем JWT
+      const token = jwt.sign(
+        { id: user.id, email: user.email },
+        process.env.JWT_SECRET!,
+        { expiresIn: "7d" }
+      );
+      // Отправляем токен через httpOnly cookie
+      res.cookie('token', token, { httpOnly: true, sameSite: 'lax' });
+      // Редиректим на дашборд
+      res.redirect('/participant-dashboard');
+    }
+  );
+
   // Удалён вызов setupAuth(app);
 
   // Удалить или заменить все использования isAuthenticated на (req, res, next) => next() для теста
@@ -33,6 +91,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Эндпоинт для получения email пользователя из JWT в cookie
+  app.get('/api/me', (req, res) => {
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ message: "Not authenticated" });
+    try {
+      const payload = jwt.verify(token, process.env.JWT_SECRET!);
+      res.json({ email: (payload as any).email });
+    } catch {
+      res.status(401).json({ message: "Invalid token" });
     }
   });
 

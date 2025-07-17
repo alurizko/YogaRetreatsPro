@@ -14,6 +14,7 @@ export var users = pgTable("users", {
     lastName: varchar("last_name"),
     profileImageUrl: varchar("profile_image_url"),
     role: varchar("role").notNull().default("participant"), // 'participant' | 'organizer'
+    password_hash: varchar("password_hash"),
     stripeCustomerId: varchar("stripe_customer_id"),
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),
@@ -63,6 +64,35 @@ export var refundRequests = pgTable("refund_requests", {
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),
 });
+// Instructors table
+export var instructors = pgTable("instructors", {
+    id: serial("id").primaryKey(),
+    firstName: varchar("first_name").notNull(),
+    lastName: varchar("last_name").notNull(),
+    bio: text("bio"),
+    photoUrl: varchar("photo_url"),
+});
+// Retreat-Instructors join table
+export var retreat_instructors = pgTable("retreat_instructors", {
+    id: serial("id").primaryKey(),
+    retreat_id: integer("retreat_id").notNull().references(function () { return retreats.id; }),
+    instructor_id: integer("instructor_id").notNull().references(function () { return instructors.id; }),
+});
+// Reviews table
+export var reviews = pgTable("reviews", {
+    id: serial("id").primaryKey(),
+    user_id: varchar("user_id").notNull().references(function () { return users.id; }),
+    retreat_id: integer("retreat_id").notNull().references(function () { return retreats.id; }),
+    rating: integer("rating").notNull(),
+    comment: text("comment"),
+});
+// Blog posts table
+export var blog_posts = pgTable("blog_posts", {
+    id: serial("id").primaryKey(),
+    author_id: varchar("author_id").notNull().references(function () { return users.id; }),
+    title: varchar("title").notNull(),
+    content: text("content").notNull(),
+});
 // Zod schemas
 export var insertUserSchema = createInsertSchema(users).omit({
     id: true,
@@ -85,4 +115,3 @@ export var insertRefundRequestSchema = createInsertSchema(refundRequests).omit({
     createdAt: true,
     updatedAt: true,
 });
-// обновление для нового коммита

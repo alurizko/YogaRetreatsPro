@@ -1,7 +1,6 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import type { Express } from "express";
-import { storage } from "./storage";
 
 passport.serializeUser((user: any, done) => {
   // Логируем user для отладки

@@ -9,31 +9,32 @@ async function fillTestData() {
   ]);
 
   // Добавление ретритов
-  await db.insert(retreats).values({
-    title: 'Йога-ретрит на Байкале',
-    description: 'Незабываемый опыт на природе',
-    location: 'Байкал',
-    startDate: '2024-07-10',
-    endDate: '2024-07-20',
-    price: 35000,
-    maxParticipants: 20,
-    currentParticipants: 0,
-    organizerId: '2',
-    isActive: true,
-  });
-
-  await db.insert(retreats).values({
-    title: 'Морской йога-тур',
-    description: 'Йога и море',
-    location: 'Сочи',
-    startDate: '2024-08-01',
-    endDate: '2024-08-10',
-    price: 40000,
-    maxParticipants: 15,
-    currentParticipants: 0,
-    organizerId: '2',
-    isActive: true,
-  });
+  await db.insert(retreats).values([
+    {
+      title: 'Йога-ретрит на Байкале',
+      description: 'Незабываемый опыт на природе',
+      location: 'Байкал',
+      startDate: '2024-07-10',
+      endDate: '2024-07-20',
+      price: "35000",
+      maxParticipants: 20,
+      currentParticipants: 0,
+      organizerId: '2',
+      isActive: true,
+    },
+    {
+      title: 'Морской йога-тур',
+      description: 'Йога и море',
+      location: 'Сочи',
+      startDate: '2024-08-01',
+      endDate: '2024-08-10',
+      price: "40000",
+      maxParticipants: 15,
+      currentParticipants: 0,
+      organizerId: '2',
+      isActive: true,
+    }
+  ]);
 
   // Добавление преподавателей
   await db.insert(instructors).values([
@@ -50,9 +51,9 @@ async function fillTestData() {
 
   // Добавление бронирований
   await db.insert(bookings).values([
-    { participant_id: '1', retreatId: 1, participants: 1, totalAmount: 35000, status: 'confirmed' },
-    { participant_id: '1', retreatId: 2, participants: 1, totalAmount: 40000, status: 'confirmed' },
-    { participant_id: '2', retreatId: 1, participants: 1, totalAmount: 35000, status: 'confirmed' },
+    { participant_id: '1', retreatId: 1, participants: 1, totalAmount: "35000", status: 'confirmed' },
+    { participant_id: '1', retreatId: 2, participants: 1, totalAmount: "40000", status: 'confirmed' },
+    { participant_id: '2', retreatId: 1, participants: 1, totalAmount: "35000", status: 'confirmed' },
   ]);
 
   // Добавление отзывов
