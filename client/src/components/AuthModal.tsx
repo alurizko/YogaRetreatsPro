@@ -10,7 +10,7 @@ interface AuthModalProps {
 
 export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const handleLogin = () => {
-    window.location.href = "/api/login";
+    window.location.href = "/api/auth/google";
   };
 
   return (
@@ -32,7 +32,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
               onClick={handleLogin}
               className="w-full bg-forest-green hover:bg-forest-green/90 text-white py-3"
             >
-              Войти через Replit Auth
+              Войти через Google
             </Button>
           </div>
 

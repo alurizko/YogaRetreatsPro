@@ -21,6 +21,12 @@ export default function Header() {
   const [loginError, setLoginError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
   const [, setLocation] = useLocation();
+ 
+  useEffect(() => {
+    const listener = (_e: Event) => setLoginModalOpen(true);
+    window.addEventListener('open-login-modal', listener as EventListener);
+    return () => window.removeEventListener('open-login-modal', listener as EventListener);
+  }, []);
 
   const handleLogout = () => {
     window.location.href = "/api/logout";
