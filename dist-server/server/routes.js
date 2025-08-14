@@ -57,6 +57,7 @@ import { db } from "./db";
 import passport from "passport";
 import session from "express-session";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import cookieParser from "cookie-parser";
 var stripe = null;
 if (process.env.STRIPE_SECRET_KEY) {
     stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -77,6 +78,7 @@ export function registerRoutes(app) {
                 resave: false,
                 saveUninitialized: false,
             }));
+            app.use(cookieParser());
             app.use(passport.initialize());
             app.use(passport.session());
             // Настройка стратегии Google
@@ -108,9 +110,13 @@ export function registerRoutes(app) {
             // Google OAuth маршруты
             app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
             app.get('/api/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login', session: false }), function (req, res) {
-                // Пример: редирект на фронт с email
                 var user = req.user;
-                res.redirect("/participant-dashboard?email=".concat(encodeURIComponent(user.email)));
+                // Генерируем JWT
+                var token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "7d" });
+                // Отправляем токен через httpOnly cookie
+                res.cookie('token', token, { httpOnly: true, sameSite: 'lax' });
+                // Редиректим на дашборд
+                res.redirect('/participant-dashboard');
             });
             // Удалён вызов setupAuth(app);
             // Удалить или заменить все использования isAuthenticated на (req, res, next) => next() для теста
@@ -124,6 +130,19 @@ export function registerRoutes(app) {
                 catch (error) {
                     console.error("Error fetching user:", error);
                     res.status(500).json({ message: "Failed to fetch user" });
+                }
+            });
+            // Эндпоинт для получения email пользователя из JWT в cookie
+            app.get('/api/me', function (req, res) {
+                var token = req.cookies.token;
+                if (!token)
+                    return res.status(401).json({ message: "Not authenticated" });
+                try {
+                    var payload = jwt.verify(token, process.env.JWT_SECRET);
+                    res.json({ email: payload.email });
+                }
+                catch (_a) {
+                    res.status(401).json({ message: "Invalid token" });
                 }
             });
             // Регистрация пользователя

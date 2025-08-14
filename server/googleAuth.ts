@@ -2,6 +2,25 @@ import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import type { Express } from "express";
 
+interface StoredUser {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  password_hash: string;
+}
+
+const inMemoryUsers = new Map<string, StoredUser>();
+const storage = {
+  async getUser(id: string): Promise<StoredUser | null> {
+    return inMemoryUsers.get(id) || null;
+  },
+  async upsertUser(user: StoredUser): Promise<StoredUser> {
+    inMemoryUsers.set(user.id, user);
+    return user;
+  },
+};
+
 passport.serializeUser((user: any, done) => {
   // Логируем user для отладки
   console.log('serializeUser user:', user);

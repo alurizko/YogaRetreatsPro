@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 export default function AuthModal(_a) {
     var open = _a.open, onOpenChange = _a.onOpenChange;
     var handleLogin = function () {
-        window.location.href = "/api/login";
+        window.location.href = "/api/auth/google";
     };
     return (<Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
@@ -20,7 +20,7 @@ export default function AuthModal(_a) {
             </p>
             
             <Button onClick={handleLogin} className="w-full bg-forest-green hover:bg-forest-green/90 text-white py-3">
-              Войти через Replit Auth
+              Войти через Google
             </Button>
           </div>
 

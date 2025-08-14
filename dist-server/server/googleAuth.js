@@ -36,7 +36,24 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import { storage } from "./storage";
+var inMemoryUsers = new Map();
+var storage = {
+    getUser: function (id) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/, inMemoryUsers.get(id) || null];
+            });
+        });
+    },
+    upsertUser: function (user) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                inMemoryUsers.set(user.id, user);
+                return [2 /*return*/, user];
+            });
+        });
+    },
+};
 passport.serializeUser(function (user, done) {
     var _a;
     // Логируем user для отладки

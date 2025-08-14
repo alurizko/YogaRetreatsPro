@@ -166,7 +166,7 @@ export default function RetreatDetail() {
                   </p>
                   <Button 
                     className="w-full bg-forest-green hover:bg-forest-green/90"
-                    onClick={() => window.location.href = "/api/login"}
+                    onClick={() => window.dispatchEvent(new Event('open-login-modal'))}
                   >
                     Войти
                   </Button>

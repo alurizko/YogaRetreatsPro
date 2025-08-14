@@ -133,7 +133,7 @@ export default function RetreatDetail() {
                   <p className="text-sm text-gray-600 mb-4">
                     Войдите, чтобы забронировать место
                   </p>
-                  <Button className="w-full bg-forest-green hover:bg-forest-green/90" onClick={function () { return window.location.href = "/api/login"; }}>
+                  <Button className="w-full bg-forest-green hover:bg-forest-green/90" onClick={function () { return window.dispatchEvent(new Event('open-login-modal')); }}>
                     Войти
                   </Button>
                 </div>)}

@@ -13,6 +13,11 @@ var ParticipantDashboard = function () {
         }
     }
     catch (_b) { }
+    // Если email не найден в JWT, пробуем получить из query-параметра
+    if (!email && typeof window !== 'undefined') {
+        var params = new URLSearchParams(window.location.search);
+        email = params.get('email') || "";
+    }
     var handleLogout = function () {
         localStorage.removeItem("token");
         setLocation("/");
