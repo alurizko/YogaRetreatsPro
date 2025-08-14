@@ -38,7 +38,7 @@ import { Router } from "express";
 import Stripe from "stripe";
 var router = Router();
 var stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: "2023-08-16",
+    apiVersion: "2025-06-30.basil",
 });
 router.post("/create-payment-intent", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var _a, amount, currency, paymentIntent, err_1;

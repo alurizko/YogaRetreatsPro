@@ -77,7 +77,7 @@ export function setupVite(app, server) {
                     serverOptions = {
                         middlewareMode: true,
                         hmr: { server: server },
-                        allowedHosts: true,
+                        allowedHosts: ['localhost'],
                     };
                     return [4 /*yield*/, createViteServer(__assign(__assign({}, viteConfig), { configFile: false, customLogger: __assign(__assign({}, viteLogger), { error: function (msg, options) {
                                     viteLogger.error(msg, options);

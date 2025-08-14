@@ -65,37 +65,22 @@ export default function Header() {
           </div>
           {/* 4. 'Войти' */}
           <div className="flex-1 flex justify-center relative">
-            {/* Dropdown */}
-            <div className="relative group">
+            {/* Inline auth links like on BookYogaRetreats */}
+            <div className="flex items-center gap-2">
+              <User className="w-5 h-5 text-forest-green" />
               <button
-                className="text-forest-green hover:text-warm-orange transition-colors text-lg font-semibold border-2 border-transparent hover:border-sage-green px-4 py-2 rounded focus:outline-none"
-                onClick={() => setDropdownOpen((v) => !v)}
-                tabIndex={0}
+                className="text-forest-green hover:text-warm-orange transition-colors text-lg font-semibold focus:outline-none"
+                onClick={() => setLoginModalOpen(true)}
               >
                 Войти
               </button>
-              {dropdownOpen && (
-                <div className="absolute left-1/2 -translate-x-1/2 mt-2 min-w-[140px] bg-white border rounded shadow-lg z-50">
-                  <button
-                    className="block w-full px-4 py-2 hover:bg-warm-orange/20 transition text-center"
-                    onClick={() => {
-                      setDropdownOpen(false);
-                      setRegisterModalOpen(true);
-                    }}
-                  >
-                    Регистрация
-                  </button>
-                  <button
-                    className="block w-full px-4 py-2 hover:bg-warm-orange/20 transition text-center"
-                    onClick={() => {
-                      setDropdownOpen(false);
-                      setLoginModalOpen(true);
-                    }}
-                  >
-                    Войти
-                  </button>
-                </div>
-              )}
+              <span className="text-soft-gray">/</span>
+              <button
+                className="text-forest-green hover:text-warm-orange transition-colors text-lg font-semibold focus:outline-none"
+                onClick={() => setRegisterModalOpen(true)}
+              >
+                Регистрация
+              </button>
             </div>
           </div>
           {/* 5. 'Стать организатором' справа с отступом */}

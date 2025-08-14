@@ -34,10 +34,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Clover, Eye, EyeOff } from "lucide-react";
+import { Clover, User, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import AuthModal from "./AuthModal";
 export default function Header() {
@@ -46,15 +46,20 @@ export default function Header() {
     var _b = useState(false), isAuthModalOpen = _b[0], setIsAuthModalOpen = _b[1];
     var _c = useState(false), isMobileMenuOpen = _c[0], setIsMobileMenuOpen = _c[1];
     var _d = useState(false), dropdownOpen = _d[0], setDropdownOpen = _d[1];
-    var _e = useState(false), isRegisterModalOpen = _e[0], setRegisterModalOpen = _e[1];
-    var _f = useState(false), showPassword = _f[0], setShowPassword = _f[1];
-    var _g = useState(false), isLoginModalOpen = _g[0], setLoginModalOpen = _g[1];
-    var _h = useState(false), showLoginPassword = _h[0], setShowLoginPassword = _h[1];
-    var _j = useState(""), registerError = _j[0], setRegisterError = _j[1];
-    var _k = useState(false), registerLoading = _k[0], setRegisterLoading = _k[1];
-    var _l = useState(""), loginError = _l[0], setLoginError = _l[1];
-    var _m = useState(false), loginLoading = _m[0], setLoginLoading = _m[1];
-    var _o = useLocation(), setLocation = _o[1];
+    var _f = useState(false), isRegisterModalOpen = _f[0], setRegisterModalOpen = _f[1];
+    var _g = useState(false), showPassword = _g[0], setShowPassword = _g[1];
+    var _h = useState(false), isLoginModalOpen = _h[0], setLoginModalOpen = _h[1];
+    var _j = useState(false), showLoginPassword = _j[0], setShowLoginPassword = _j[1];
+    var _k = useState(""), registerError = _k[0], setRegisterError = _k[1];
+    var _l = useState(false), registerLoading = _l[0], setRegisterLoading = _l[1];
+    var _m = useState(""), loginError = _m[0], setLoginError = _m[1];
+    var _o = useState(false), loginLoading = _o[0], setLoginLoading = _o[1];
+    var _p = useLocation(), setLocation = _p[1];
+    useEffect(function () {
+        var listener = function (_e) { return setLoginModalOpen(true); };
+        window.addEventListener('open-login-modal', listener);
+        return function () { return window.removeEventListener('open-login-modal', listener); };
+    }, []);
     var handleLogout = function () {
         window.location.href = "/api/logout";
     };
@@ -88,25 +93,16 @@ export default function Header() {
           </div>
           {/* 4. 'Войти' */}
           <div className="flex-1 flex justify-center relative">
-            {/* Dropdown */}
-            <div className="relative group">
-              <button className="text-forest-green hover:text-warm-orange transition-colors text-lg font-semibold border-2 border-transparent hover:border-sage-green px-4 py-2 rounded focus:outline-none" onClick={function () { return setDropdownOpen(function (v) { return !v; }); }} tabIndex={0}>
+            {/* Inline auth links like on BookYogaRetreats */}
+            <div className="flex items-center gap-2">
+              <User className="w-5 h-5 text-forest-green"/>
+              <button className="text-forest-green hover:text-warm-orange transition-colors text-lg font-semibold focus:outline-none" onClick={function () { return setLoginModalOpen(true); }}>
                 Войти
               </button>
-              {dropdownOpen && (<div className="absolute left-1/2 -translate-x-1/2 mt-2 min-w-[140px] bg-white border rounded shadow-lg z-50">
-                  <button className="block w-full px-4 py-2 hover:bg-warm-orange/20 transition text-center" onClick={function () {
-                setDropdownOpen(false);
-                setRegisterModalOpen(true);
-            }}>
-                    Регистрация
-                  </button>
-                  <button className="block w-full px-4 py-2 hover:bg-warm-orange/20 transition text-center" onClick={function () {
-                setDropdownOpen(false);
-                setLoginModalOpen(true);
-            }}>
-                    Войти
-                  </button>
-                </div>)}
+              <span className="text-soft-gray">/</span>
+              <button className="text-forest-green hover:text-warm-orange transition-colors text-lg font-semibold focus:outline-none" onClick={function () { return setRegisterModalOpen(true); }}>
+                Регистрация
+              </button>
             </div>
           </div>
           {/* 5. 'Стать организатором' справа с отступом */}
