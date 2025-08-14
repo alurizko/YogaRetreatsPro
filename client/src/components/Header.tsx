@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Clover, Menu, User, Settings, LogOut, Eye, EyeOff } from "lucide-react";
+import { Clover, Menu, User, Settings, LogOut, Eye, EyeOff, ChevronDown } from "lucide-react";
 import { useAuth, resetAuthCache } from "@/hooks/useAuth";
 import AuthModal from "./AuthModal";
 
@@ -220,6 +220,7 @@ export default function Header() {
                 <button className="flex items-center gap-2 px-4 py-2 rounded-md border-2 border-gray-300 hover:border-[#20B2AA] bg-white hover:bg-gray-50 transition-colors duration-200 text-forest-green hover:text-[#20B2AA] font-semibold">
                   <User className="w-5 h-5" />
                   <span>Войти</span>
+                  <ChevronDown className="w-4 h-4 ml-1" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="center" className="w-56 bg-white border border-gray-200 rounded-lg shadow-lg">
@@ -242,22 +243,12 @@ export default function Header() {
                 >
                   <span className="font-semibold">Регистрация</span>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-gray-200" />
-                <DropdownMenuItem 
-                  onClick={() => {
-                    setDropdownOpen(false);
-                    setLocation('/organizer/add-retreat');
-                  }}
-                  className="px-4 py-3 hover:bg-[#20B2AA] hover:text-white cursor-pointer flex justify-center"
-                >
-                  <span className="font-semibold">Добавьте свой ретрит</span>
-                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
           {/* 5. 'Стать организатором' справа с отступом */}
           <div className="flex-1 flex justify-end pr-[40px]">
-            <Link href="/api/login" className="text-forest-green hover:text-warm-orange transition-colors text-lg font-semibold border-2 border-transparent hover:border-sage-green" style={{display: 'block', opacity: 1, visibility: 'visible', pointerEvents: 'auto', position: 'relative', zIndex: 1000}}>
+            <Link href="/organizer/add-retreat" className="text-forest-green hover:text-warm-orange transition-colors text-lg font-semibold border-2 border-transparent hover:border-sage-green" style={{display: 'block', opacity: 1, visibility: 'visible', pointerEvents: 'auto', position: 'relative', zIndex: 1000}}>
               Стать организатором
             </Link>
           </div>
