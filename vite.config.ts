@@ -33,6 +33,11 @@ export default defineConfig({
       strict: true,
       deny: ["**/.*"],
     },
+    allowedHosts: [
+      /.*\.loca\.lt$/,
+      'localhost',
+      'modern-crews-brake.loca.lt',
+    ],
     proxy: {
       '/api': 'http://localhost:5000',
     },
