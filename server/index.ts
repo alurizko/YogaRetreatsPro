@@ -7,6 +7,36 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Basic auth for tunnel access when env vars are set
+if (process.env.TUNNEL_PASSWORD) {
+  const expectedUser = process.env.TUNNEL_USER || "user";
+  const expectedPass = process.env.TUNNEL_PASSWORD;
+  log(`Tunnel basic auth enabled for user '${expectedUser}'`, "express");
+  app.use((req, res, next) => {
+    const authHeader = req.headers["authorization"];
+    if (!authHeader || !authHeader.toString().startsWith("Basic ")) {
+      res.setHeader("WWW-Authenticate", 'Basic realm="Secure Tunnel"');
+      return res.status(401).send("Authentication required");
+    }
+    const base64Credentials = authHeader.toString().slice("Basic ".length).trim();
+    let decoded = "";
+    try {
+      decoded = Buffer.from(base64Credentials, "base64").toString("utf8");
+    } catch {
+      res.setHeader("WWW-Authenticate", 'Basic realm="Secure Tunnel"');
+      return res.status(401).send("Invalid authorization header");
+    }
+    const separatorIndex = decoded.indexOf(":");
+    const username = separatorIndex >= 0 ? decoded.slice(0, separatorIndex) : decoded;
+    const password = separatorIndex >= 0 ? decoded.slice(separatorIndex + 1) : "";
+    if (username === expectedUser && password === expectedPass) {
+      return next();
+    }
+    res.setHeader("WWW-Authenticate", 'Basic realm="Secure Tunnel"');
+    return res.status(401).send("Invalid credentials");
+  });
+}
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
