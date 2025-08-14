@@ -11,7 +11,7 @@ export default defineConfig({
     process.env.REPL_ID !== undefined
       ? [
           await import("@replit/vite-plugin-cartographer").then((m) =>
-            m.cartographer(),
+            m.cartographer()
           ),
         ]
       : []),
@@ -28,13 +28,22 @@ export default defineConfig({
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
   },
+  
   server: {
-    fs: {
-      strict: true,
-      deny: ["**/.*"],
-    },
-    proxy: {
-      '/api': 'http://localhost:5000',
-    },
+  fs: {
+    strict: true,
+    deny: [".env", "**/.*"],
   },
+  proxy: {
+    "/api": "http://localhost:5000",
+  },
+  host: "0.0.0.0",
+  port: process.env.PORT || 5000,
+  allowedHosts: [
+    ".replit.dev",
+    ".repl.co",
+    ".id.repl.co",
+    /[0-9a-f-]+\.kirk\.replit\.dev$/  // разрешаем все случайные поддомены Replit
+  ],
+}              
 });

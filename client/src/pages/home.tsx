@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,21 +7,29 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { Search, Check, Star, MapPin, Clover } from "lucide-react";
 import RetreatCard from "@/components/RetreatCard";
+
 import type { Retreat } from "@shared/schema";
 
 export default function Home() {
   const [searchLocation, setSearchLocation] = useState("");
   const [searchDate, setSearchDate] = useState("");
   const [searchDuration, setSearchDuration] = useState("");
+  // Google OAuth модалка и обработчики удалены
 
   const { data: retreats = [], isLoading } = useQuery<Retreat[]>({
     queryKey: ["/api/retreats"],
   });
 
+
+
   const featuredRetreats = retreats.slice(0, 3);
+
+  // Удалены обработчики OAuth на главной странице
 
   return (
     <main className="bg-soft-white">
+
+
       {/* Hero Section */}
       <section className="relative bg-gradient-to-r from-forest-green to-sage-green">
         <div className="absolute inset-0 bg-black bg-opacity-30"></div>
@@ -44,6 +52,8 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               {/* Кнопки 'Найти ретрит' и 'Стать организатором' удалены из hero-секции */}
             </div>
+            
+
           </div>
         </div>
       </section>

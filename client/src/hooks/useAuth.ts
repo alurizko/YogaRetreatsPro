@@ -3,6 +3,12 @@ import { useState, useEffect } from "react";
 
 let authStateCache: { user: any; checked: boolean } = { user: null, checked: false };
 
+// Функция для сброса кэша авторизации
+export const resetAuthCache = () => {
+  console.log("🧹 Сбрасываем кэш авторизации...");
+  authStateCache = { user: null, checked: false };
+};
+
 export function useAuth() {
   const [authState, setAuthState] = useState(authStateCache);
 
@@ -15,17 +21,22 @@ export function useAuth() {
     enabled: !authState.checked,
     queryFn: async () => {
       try {
+        console.log("🔍 [useAuth] Проверяем пользователя...");
         const res = await fetch("/api/auth/user", {
           credentials: "include",
         });
         if (res.status === 401) {
+          console.log("🔍 [useAuth] Пользователь не авторизован (401)");
           return null;
         }
         if (!res.ok) {
           throw new Error(`${res.status}: ${res.statusText}`);
         }
-        return await res.json();
+        const userData = await res.json();
+        console.log("🔍 [useAuth] Получены данные пользователя:", userData);
+        return userData;
       } catch (error) {
+        console.log("🔍 [useAuth] Ошибка при получении пользователя:", error);
         return null;
       }
     },

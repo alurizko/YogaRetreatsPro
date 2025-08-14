@@ -12,6 +12,7 @@ import passport from "passport";
 import session from "express-session";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import cookieParser from "cookie-parser";
+import nodemailer from "nodemailer";
 
 let stripe: Stripe | null = null;
 
@@ -22,6 +23,9 @@ if (process.env.STRIPE_SECRET_KEY) {
 } else {
   console.warn('Warning: STRIPE_SECRET_KEY not configured. Payment functionality will be disabled.');
 }
+
+// Временное хранилище токенов сброса пароля (для теста)
+const resetTokens: Record<string, string> = {};
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Настройка express-session и passport
@@ -41,16 +45,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     callbackURL: process.env.GOOGLE_CALLBACK_URL || "http://localhost:5000/api/auth/google/callback"
   },
     async (accessToken: string, refreshToken: string, profile: any, done: any) => {
-      // Минимальная интеграция: пользователь создаётся на лету
-      let user = {
-        id: profile.id,
-        email: profile.emails?.[0].value,
-        firstName: profile.name?.givenName,
-        lastName: profile.name?.familyName,
-        role: "participant"
-      };
-      // Можно добавить сохранение в БД, если нужно
-      return done(null, user);
+      try {
+        // Проверяем, есть ли пользователь в базе по email (а не только по id)
+        let usersResult = await db.select().from(users).where(eq(users.email, profile.emails?.[0].value));
+        let user;
+        if (usersResult.length) {
+          user = usersResult[0];
+        } else {
+          // Подставляем дефолтные значения, если имя или фамилия отсутствуют
+          const firstName = profile.name?.givenName || "Google";
+          const lastName = profile.name?.familyName || "User";
+          const [newUser] = await db.insert(users).values({
+            id: profile.id, // profile.id можно оставить, если он уникален
+            email: profile.emails?.[0].value,
+            firstName,
+            lastName,
+            role: "user"
+          }).returning();
+          user = newUser;
+        }
+        // ВРЕМЕННЫЙ ЛОГ для отладки
+        console.log("[GoogleStrategy] user.id:", user.id, "user.email:", user.email);
+        return done(null, user);
+      } catch (err) {
+        return done(err);
+      }
     }
   ));
   passport.serializeUser((user: any, done) => {
@@ -60,22 +79,130 @@ export async function registerRoutes(app: Express): Promise<Server> {
     done(null, user);
   });
 
-  // Google OAuth маршруты
-  app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+  // Google OAuth маршруты с поддержкой режимов регистрации и входа
+  app.get('/api/auth/google', (req, res, next) => {
+    console.log(`🔍 [Google OAuth] === НАЧАЛО ЗАПРОСА ===`);
+    console.log(`🔍 [Google OAuth] URL: ${req.url}`);
+    console.log(`🔍 [Google OAuth] Query params:`, req.query);
+    
+    const mode = req.query.mode as string; // 'register' или 'login'
+    const prompt = req.query.prompt as string; // 'select_account' для выбора аккаунта
+    
+    console.log(`🔍 [Google OAuth] Запрос аутентификации: mode=${mode}, prompt=${prompt}`);
+    
+    // Сохраняем режим в сессии для использования в callback
+    req.session = req.session || {};
+    (req.session as any).googleMode = mode;
+    
+    // Настройки аутентификации Google
+    const authOptions: any = { 
+      scope: ['profile', 'email'] 
+    };
+    
+    // Если указан prompt=select_account, добавляем его в опции
+    if (prompt === 'select_account') {
+      authOptions.prompt = 'select_account';
+      console.log(`🔍 [Google OAuth] Добавлен prompt=select_account`);
+    }
+    
+    console.log(`🔍 [Google OAuth] Опции аутентификации:`, authOptions);
+    console.log(`🔍 [Google OAuth] Вызываем passport.authenticate`);
+    
+    passport.authenticate('google', authOptions)(req, res, next);
+    
+    console.log(`🔍 [Google OAuth] === КОНЕЦ ЗАПРОСА ===`);
+  });
+
   app.get('/api/auth/google/callback',
     passport.authenticate('google', { failureRedirect: '/login', session: false }),
-    (req, res) => {
-      const user = req.user as any;
-      // Генерируем JWT
-      const token = jwt.sign(
-        { id: user.id, email: user.email },
-        process.env.JWT_SECRET!,
-        { expiresIn: "7d" }
-      );
-      // Отправляем токен через httpOnly cookie
-      res.cookie('token', token, { httpOnly: true, sameSite: 'lax' });
-      // Редиректим на дашборд
-      res.redirect('/participant-dashboard');
+    async (req, res) => {
+      try {
+        let user = req.user as any;
+        const mode = (req.session as any)?.googleMode || 'login';
+        
+        console.log(`🔍 [Google OAuth] === НАЧАЛО CALLBACK ===`);
+        console.log(`🔍 [Google OAuth] Режим: ${mode}`);
+        console.log(`🔍 [Google OAuth] Email: ${user.email}`);
+        console.log(`🔍 [Google OAuth] User ID: ${user.id}`);
+        console.log(`🔍 [Google OAuth] User object:`, JSON.stringify(user, null, 2));
+        
+        if (mode === 'register') {
+          // Режим регистрации - проверяем, существует ли пользователь
+          const existingUser = await db.select().from(users).where(eq(users.email, user.email));
+          
+          if (existingUser.length > 0) {
+            // Пользователь уже существует — предлагаем выбрать другой аккаунт через Google
+            const retryCount = (req.session as any)?.googleRegisterRetry ?? 0;
+            console.log(`🔍 [Google OAuth] Пользователь ${user.email} уже существует. retryCount=${retryCount}`);
+            if (retryCount < 1) {
+              (req.session as any).googleRegisterRetry = retryCount + 1;
+              console.log('🔍 [Google OAuth] Повторная попытка с prompt=select_account');
+              res.redirect('/api/auth/google?mode=register&prompt=select_account');
+              return;
+            }
+            (req.session as any).googleRegisterRetry = 0;
+            console.log('🔍 [Google OAuth] Превышено число попыток. Возврат с ошибкой на /auth');
+            res.redirect('http://localhost:5173/auth?error=user_exists&email=' + encodeURIComponent(user.email));
+            return;
+          }
+          
+          // Пользователь не существует - создаем нового
+          console.log(`🔍 [Google OAuth] Создаем нового пользователя: ${user.email}`);
+          const [newUser] = await db.insert(users).values({
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName || user.name?.givenName || 'Google',
+            lastName: user.lastName || user.name?.familyName || 'User',
+            role: "user"
+          }).returning();
+          user = newUser;
+        } else {
+          // Режим входа - проверяем, существует ли пользователь
+          const existingUser = await db.select().from(users).where(eq(users.email, user.email));
+          
+          if (existingUser.length === 0) {
+            // Пользователь не существует - создаем его в базе данных и выполняем вход
+            console.log(`🔍 [Google OAuth] Пользователь ${user.email} не найден, создаем в базе данных и выполняем вход`);
+            const [newUser] = await db.insert(users).values({
+              id: user.id,
+              email: user.email,
+              firstName: user.firstName || user.name?.givenName || 'Google',
+              lastName: user.lastName || user.name?.familyName || 'User',
+              role: "user"
+            }).returning();
+            user = newUser;
+          } else {
+            // Пользователь существует - обновляем данные из Google
+            console.log(`🔍 [Google OAuth] Пользователь ${user.email} найден, обновляем данные и выполняем вход`);
+            await db.update(users).set({
+              firstName: user.firstName || user.name?.givenName || existingUser[0].firstName,
+              lastName: user.lastName || user.name?.familyName || existingUser[0].lastName,
+              updatedAt: new Date()
+            }).where(eq(users.email, user.email));
+            user = existingUser[0];
+          }
+        }
+        
+        console.log(`🔍 [Google OAuth] Генерируем JWT токен для пользователя: ${user.email}`);
+        // Генерируем JWT
+        const token = jwt.sign(
+          { id: user.id, email: user.email },
+          process.env.JWT_SECRET!,
+          { expiresIn: "7d" }
+        );
+        
+        // Отправляем токен через httpOnly cookie
+        res.cookie('token', token, { httpOnly: true, sameSite: 'lax' });
+        
+        // Сбрасываем счётчик повторов регистрации
+        try { (req.session as any).googleRegisterRetry = 0; } catch {}
+        // Редиректим на фронтенд-дэшборд
+        res.redirect('http://localhost:5173/participant/dashboard');
+        console.log(`🔍 [Google OAuth] === КОНЕЦ CALLBACK ===`);
+      } catch (error) {
+        console.error('🔍 [Google OAuth] Ошибка в callback:', error);
+        res.redirect('http://localhost:5173?error=auth_failed');
+      }
     }
   );
 
@@ -83,15 +210,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Удалить или заменить все использования isAuthenticated на (req, res, next) => next() для теста
   // Auth routes
-  app.get('/api/auth/user', (req, res, next) => {
+  app.get('/api/auth/user', async (req, res, next) => {
     try {
-      // Возвращаем фиктивного пользователя для теста
-      const user = { id: 'test-user', role: 'organizer', email: 'test@example.com' };
-      res.json(user);
+      const token = req.cookies.token;
+      if (!token) return res.status(401).json({ message: "Not authenticated" });
+      let payload;
+      try {
+        payload = jwt.verify(token, process.env.JWT_SECRET!);
+      } catch {
+        return res.status(401).json({ message: "Invalid token" });
+      }
+      // Поиск пользователя в БД по id из токена
+      const userId = (payload as any).id;
+      const usersResult = await db.select().from(users).where(eq(users.id, userId));
+      if (!usersResult.length) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      const user = usersResult[0];
+      res.json({ id: user.id, role: user.role, email: user.email });
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
     }
+  });
+
+  // Эндпоинт для выхода пользователя (logout)
+  app.post('/api/auth/logout', (req, res) => {
+    res.clearCookie('token', { httpOnly: true, sameSite: 'lax' });
+    res.status(200).json({ message: "Logged out" });
   });
 
   // Эндпоинт для получения email пользователя из JWT в cookie
@@ -133,7 +279,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }).returning();
       // Генерация JWT
       const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET!, { expiresIn: "7d" });
-      res.json({ token, user: { id: user.id, email: user.email } });
+      res.cookie('token', token, { httpOnly: true, sameSite: 'lax' });
+      res.json({ user: { id: user.id, email: user.email } });
     } catch (error) {
       console.error("Registration error:", error);
       res.status(500).json({ message: "Ошибка регистрации" });
@@ -165,7 +312,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       // Генерация JWT-токена
       const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET!, { expiresIn: "7d" });
-      res.json({ token, user: { id: user.id, email: user.email } });
+      res.cookie('token', token, { httpOnly: true, sameSite: 'lax' });
+      res.json({ user: { id: user.id, email: user.email } });
     } catch (error) {
       console.error("Login error:", error);
       res.status(500).json({ message: "Ошибка входа" });
@@ -371,7 +519,181 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Восстановление пароля (отправка письма через nodemailer)
+  app.post('/api/forgot-password', async (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "Email обязателен" });
+    }
+    // Проверяем, есть ли такой пользователь
+    const usersResult = await db.select().from(users).where(eq(users.email, email));
+    if (usersResult.length > 0) {
+      // Генерируем токен для сброса пароля
+      const resetToken = Math.random().toString(36).slice(2) + Date.now();
+      // Сохраняем связь токен <-> email (в памяти)
+      resetTokens[resetToken] = email;
+      const resetLink = `http://localhost:5173/reset-password?token=${resetToken}`;
+      if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS && process.env.SMTP_FROM) {
+        const transporter = nodemailer.createTransport({
+          host: process.env.SMTP_HOST,
+          port: Number(process.env.SMTP_PORT) || 587,
+          secure: false,
+          auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+          },
+        });
+        try {
+          await transporter.sendMail({
+            from: process.env.SMTP_FROM,
+            to: email,
+            subject: "Восстановление пароля YogaRetreatPro",
+            text: `Для сброса пароля перейдите по ссылке: ${resetLink}`,
+            html: `<p>Для сброса пароля <a href='${resetLink}'>перейдите по ссылке</a>.</p>`
+          });
+          console.log(`Письмо для сброса пароля отправлено на ${email}`);
+        } catch (err) {
+          console.error("Ошибка отправки письма:", err);
+        }
+      } else {
+        console.log(`Ссылка для сброса пароля для ${email}: ${resetLink}`);
+        console.warn("SMTP не настроен. Письмо не отправлено.");
+      }
+    }
+    // Всегда возвращаем успех, чтобы не раскрывать, есть ли email
+    res.json({ message: "Если email зарегистрирован, инструкция по восстановлению отправлена!" });
+  });
+
+  // Эндпоинт для сброса пароля
+  app.post('/api/reset-password', async (req, res) => {
+    const { token, password } = req.body;
+    if (!token || !password) {
+      return res.status(400).json({ message: "Токен и новый пароль обязательны" });
+    }
+    const email = resetTokens[token];
+    if (!email) {
+      return res.status(400).json({ message: "Недействительный или устаревший токен" });
+    }
+    // Находим пользователя по email
+    const usersResult = await db.select().from(users).where(eq(users.email, email));
+    if (!usersResult.length) {
+      return res.status(404).json({ message: "Пользователь не найден" });
+    }
+    // Хэшируем новый пароль
+    const password_hash = await bcrypt.hash(password, 10);
+    // Обновляем пароль в базе
+    await db.update(users).set({ password_hash }).where(eq(users.email, email));
+    // Удаляем токен (одноразовый)
+    delete resetTokens[token];
+    res.json({ message: "Пароль успешно изменён!" });
+  });
+
+  // Регистрация через Google (проверка данных Google аккаунта)
+  app.post('/api/google-register', async (req, res) => {
+    const { firstName, lastName, email, password } = req.body;
+    
+    if (!firstName || !lastName || !email || !password) {
+      return res.status(400).json({ message: "Все поля обязательны" });
+    }
+
+    try {
+      // Проверяем, существует ли пользователь с таким email
+      const existingUser = await db.select().from(users).where(eq(users.email, email));
+      if (existingUser.length > 0) {
+        return res.status(409).json({ message: "Пользователь с таким Email уже существует" });
+      }
+
+      // Здесь должна быть проверка данных Google аккаунта
+      // Для демонстрации просто создаем пользователя
+      // В реальном приложении здесь нужно проверить данные через Google API
+      
+      const password_hash = await bcrypt.hash(password, 10);
+      const [newUser] = await db.insert(users).values({
+        id: email, // Используем email как id для совместимости
+        email,
+        firstName,
+        lastName,
+        password_hash,
+        role: "user"
+      }).returning();
+
+      // Генерируем JWT токен
+      const token = jwt.sign(
+        { id: newUser.id, email: newUser.email },
+        process.env.JWT_SECRET!,
+        { expiresIn: "7d" }
+      );
+
+      res.cookie('token', token, { httpOnly: true, sameSite: 'lax' });
+      res.json({ 
+        message: "Пользователь успешно зарегистрирован через Google",
+        token,
+        user: { id: newUser.id, email: newUser.email, firstName: newUser.firstName, lastName: newUser.lastName }
+      });
+    } catch (error) {
+      console.error("Ошибка регистрации через Google:", error);
+      res.status(500).json({ message: "Ошибка регистрации" });
+    }
+  });
+
+  // Вход через Google (проверка данных Google аккаунта)
+  app.post('/api/google-login', async (req, res) => {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email и пароль обязательны" });
+    }
+
+    try {
+      // Ищем пользователя по email
+      const usersResult = await db.select().from(users).where(eq(users.email, email));
+      if (usersResult.length === 0) {
+        return res.status(404).json({ message: "Пользователь с такими данными не зарегистрирован" });
+      }
+
+      const user = usersResult[0];
+
+      // Проверяем пароль
+      if (!user.password_hash) {
+        return res.status(401).json({ message: "Пользователь не имеет пароля" });
+      }
+      const isValidPassword = await bcrypt.compare(password, user.password_hash);
+      if (!isValidPassword) {
+        return res.status(401).json({ message: "Неверный пароль" });
+      }
+
+      // Здесь должна быть дополнительная проверка данных Google аккаунта
+      // В реальном приложении здесь нужно проверить данные через Google API
+
+      // Генерируем JWT токен
+      const token = jwt.sign(
+        { id: user.id, email: user.email },
+        process.env.JWT_SECRET!,
+        { expiresIn: "7d" }
+      );
+
+      res.cookie('token', token, { httpOnly: true, sameSite: 'lax' });
+      res.json({ 
+        message: "Успешный вход через Google",
+        token,
+        user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName }
+      });
+    } catch (error) {
+      console.error("Ошибка входа через Google:", error);
+      res.status(500).json({ message: "Ошибка входа" });
+    }
+  });
+
   // (удалён временный эндпоинт /api/delete-user)
+
+  // Обработка всех остальных маршрутов (кроме API) — возвращаем пустой ответ
+  app.get('*', (req, res) => {
+    if (!req.path.startsWith('/api/')) {
+      res.status(200).send('');
+    } else {
+      res.status(404).json({ message: 'API route not found' });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;

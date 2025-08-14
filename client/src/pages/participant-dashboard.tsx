@@ -1,27 +1,19 @@
 import React from "react";
 import { useLocation } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
+import { queryClient } from "@/lib/queryClient";
 
 const ParticipantDashboard = () => {
   const [, setLocation] = useLocation();
-  // Попытка получить email из localStorage (если JWT сохранён)
-  let email = "";
-  try {
-    const token = localStorage.getItem("token");
-    if (token) {
-      // Декодируем JWT (без проверки подписи, только для отображения email)
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      email = payload.email;
-    }
-  } catch {}
+  const { user } = useAuth();
+  const email = user?.email || "";
 
-  // Если email не найден в JWT, пробуем получить из query-параметра
-  if (!email && typeof window !== 'undefined') {
-    const params = new URLSearchParams(window.location.search);
-    email = params.get('email') || "";
-  }
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "include",
+    });
+    queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     setLocation("/");
   };
 
@@ -36,7 +28,6 @@ const ParticipantDashboard = () => {
       >
         Выйти
       </button>
-      {/* Пример секции для будущего списка бронирований */}
       <div className="w-full max-w-xl bg-white rounded-xl shadow p-6 mt-4">
         <h2 className="text-xl font-bold mb-2">Ваши бронирования</h2>
         <p className="text-soft-gray">Здесь в будущем появится список ваших ретритов и бронирований.</p>

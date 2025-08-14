@@ -39,10 +39,13 @@ export function setupGoogleAuth(app: Express) {
       let user = await storage.getUser(profile.id);
       if (!user) {
         console.log('User not found, creating...');
+        const firstName = profile.name?.givenName || "Google";
+        const lastName = profile.name?.familyName || "User";
         user = await storage.upsertUser({
           id: profile.id,
           email: String(profile.emails?.[0]?.value || ''),
-          name: String(profile.displayName || [profile.name?.givenName, profile.name?.familyName].filter(Boolean).join(' ') || 'Google User'),
+          firstName,
+          lastName,
           role: 'user',
           password_hash: '',
         });

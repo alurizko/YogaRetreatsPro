@@ -12,6 +12,9 @@ import OrganizerDashboard from "@/pages/organizer-dashboard";
 import ParticipantDashboard from "@/pages/participant-dashboard";
 import Checkout from "@/pages/checkout";
 import NotFound from "@/pages/not-found";
+import ResetPassword from "@/pages/reset-password";
+import AuthPage from "@/pages/auth";
+import AddRetreat from "@/pages/add-retreat";
 
 function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -29,8 +32,11 @@ function Router() {
       <Header />
       <Switch>
         <Route path="/" component={Home} />
+        <Route path="/auth" component={AuthPage} />
         <Route path="/retreats" component={Retreats} />
         <Route path="/retreat/:id" component={RetreatDetail} />
+        <Route path="/reset-password" component={ResetPassword} />
+        <Route path="/organizer/add-retreat" component={AddRetreat} />
         {isAuthenticated && user?.role === 'organizer' && (
           <Route path="/organizer/dashboard" component={OrganizerDashboard} />
         )}

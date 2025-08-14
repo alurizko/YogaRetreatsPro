@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Eye, EyeOff, X } from "lucide-react";
 
 interface AuthModalProps {
   open: boolean;
@@ -9,46 +10,222 @@ interface AuthModalProps {
 }
 
 export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
-  const handleLogin = () => {
-    window.location.href = "/api/login";
+  const [isLogin, setIsLogin] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotSent, setForgotSent] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotError, setForgotError] = useState("");
+
+  const handleGoogleAuth = (mode: 'login' | 'register') => {
+    const url = `/api/auth/google?mode=${mode}`;
+    window.location.href = url;
+  };
+
+  const handleForgot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotLoading(true);
+    setForgotError("");
+    try {
+      const res = await fetch("/api/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: forgotEmail }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Ошибка отправки запроса");
+      }
+      setForgotSent(true);
+    } catch (err: any) {
+      setForgotError(err.message || "Ошибка отправки запроса");
+    } finally {
+      setForgotLoading(false);
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-forest-green text-center">
-            Добро пожаловать
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-6 py-4">
-          <div className="text-center">
-            <p className="text-gray-600 mb-6">
-              Войдите в свой аккаунт или создайте новый с помощью Replit Auth
-            </p>
-            
-            <Button 
-              onClick={handleLogin}
-              className="w-full bg-forest-green hover:bg-forest-green/90 text-white py-3"
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-md p-0 border-0 bg-white rounded-lg shadow-xl">
+          {/* Header with close button */}
+          <div className="relative p-6 pb-4">
+            <button
+              onClick={() => onOpenChange(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
             >
-              Войти через Replit Auth
+              <X className="w-5 h-5" />
+            </button>
+            
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                {isLogin ? "Войти" : "Регистрация"}
+              </h2>
+              <p className="text-sm text-gray-600">
+                {isLogin ? (
+                  <>
+                    Уже есть аккаунт?{" "}
+                    <button
+                      onClick={() => setIsLogin(false)}
+                      className="text-[#20B2AA] hover:underline font-medium"
+                    >
+                      Зарегистрироваться
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    Уже есть аккаунт?{" "}
+                    <button
+                      onClick={() => setIsLogin(true)}
+                      className="text-[#20B2AA] hover:underline font-medium"
+                    >
+                      Войти
+                    </button>
+                  </>
+                )}
+              </p>
+            </div>
+          </div>
+
+          <div className="px-6 pb-6 space-y-4">
+            {/* Email Input */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email
+              </label>
+              <Input
+                type="email"
+                placeholder="например john@smith.com"
+                className="w-full h-12 border-gray-300 rounded-md focus:border-[#20B2AA] focus:ring-[#20B2AA]"
+              />
+            </div>
+
+            {/* Password Input */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Пароль
+              </label>
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Введите ваш пароль"
+                  className="w-full h-12 border-gray-300 rounded-md focus:border-[#20B2AA] focus:ring-[#20B2AA] pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Forgot Password Link */}
+            {isLogin && (
+              <div className="text-center">
+                <button
+                  onClick={() => setForgotOpen(true)}
+                  className="text-[#20B2AA] hover:underline text-sm font-medium"
+                >
+                  Забыли пароль?
+                </button>
+              </div>
+            )}
+
+            {/* Main Action Button */}
+            <Button className="w-full h-12 bg-[#20B2AA] hover:bg-[#1A9B94] text-white font-semibold rounded-md transition-colors">
+              {isLogin ? "Войти" : "Зарегистрироваться"}
+            </Button>
+
+            {/* Social Login Buttons */}
+            <div className="space-y-3">
+              <Button
+                onClick={() => handleGoogleAuth(isLogin ? 'login' : 'register')}
+                variant="outline"
+                className="w-full h-12 border-gray-300 hover:bg-gray-50 font-medium rounded-md"
+              >
+                <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Вход через аккаунт Google
+              </Button>
+
+              <Button
+                variant="outline"
+                className="w-full h-12 bg-[#1877F2] hover:bg-[#166FE5] text-white border-[#1877F2] font-medium rounded-md"
+              >
+                <svg className="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+                Continue with Facebook
+              </Button>
+            </div>
+
+            {/* Divider */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">ИЛИ</span>
+              </div>
+            </div>
+
+            {/* Partner Login */}
+            <Button
+              variant="outline"
+              className="w-full h-12 border-gray-300 hover:bg-gray-50 font-medium rounded-md"
+            >
+              Войти как партнер
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
 
-          <div className="text-center text-sm text-gray-500">
-            <p>
-              Поддерживаем вход через Google, GitHub, Apple и Email
-            </p>
-          </div>
-
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-sm text-blue-700">
-              <strong>Для организаторов:</strong> После входа вы сможете изменить свою роль в настройках профиля
-            </p>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+      {/* Forgot Password Modal */}
+      <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-center">
+              Восстановление пароля
+            </DialogTitle>
+          </DialogHeader>
+          {forgotSent ? (
+            <div className="py-6 text-center text-green-700">
+              Если email зарегистрирован, инструкция по восстановлению отправлена!
+            </div>
+          ) : (
+            <form className="space-y-4 py-4" onSubmit={handleForgot}>
+              <label className="block text-sm font-medium text-gray-700 text-left" htmlFor="forgot-email">
+                Введите ваш email
+              </label>
+              <Input
+                id="forgot-email"
+                type="email"
+                value={forgotEmail}
+                onChange={e => setForgotEmail(e.target.value)}
+                required
+                placeholder="you@email.com"
+                className="w-full h-12"
+                autoFocus
+              />
+              {forgotError && <div className="text-red-600 text-xs">{forgotError}</div>}
+              <Button
+                type="submit"
+                className="w-full h-12 bg-blue-600 text-white hover:bg-blue-700"
+                disabled={forgotLoading}
+              >
+                {forgotLoading ? "Отправка..." : "Восстановить пароль"}
+              </Button>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
