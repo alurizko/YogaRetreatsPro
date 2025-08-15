@@ -205,8 +205,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user || user.role !== 'organizer') {
         return res.status(403).json({ message: "Only organizers can create retreats" });
       }
+      const body = req.body as any;
+      console.log("/api/retreats body:", req.body);
       const retreatData = insertRetreatSchema.parse({
-        ...req.body,
+        ...body,
+        startDate: body.startDate ? new Date(body.startDate) : undefined,
+        endDate: body.endDate ? new Date(body.endDate) : undefined,
+        price: body.price != null ? String(body.price) : undefined,
+        imageUrl: body.imageUrl ? String(body.imageUrl) : undefined,
+        isActive: body.isActive != null ? Boolean(body.isActive) : true,
         organizerId: user.id,
       });
       // Возвращаем фиктивный созданный ретрит
