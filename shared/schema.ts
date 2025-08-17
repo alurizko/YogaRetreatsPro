@@ -120,6 +120,22 @@ export const blog_posts = pgTable("blog_posts", {
   content: text("content").notNull(),
 });
 
+// Retreat applications table (заявки организаторов ретритов)
+export const retreat_applications = pgTable("retreat_applications", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 200 }).notNull(), // Название ретрита
+  location: varchar("location", { length: 200 }).notNull(), // Местоположение
+  description: text("description").notNull(), // Описание ретрита
+  price: decimal("price", { precision: 10, scale: 2 }).notNull(), // Цена в гривнах
+  duration: integer("duration").notNull(), // Длительность в днях
+  capacity: integer("capacity").notNull(), // Максимальное количество участников
+  email: varchar("email", { length: 150 }).notNull(), // Email для связи
+  phone: varchar("phone", { length: 20 }), // Телефон (формат: +38 (099) XXX-XX-XX)
+  status: varchar("status").notNull().default("pending"), // 'pending' | 'approved' | 'rejected'
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Type exports
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -132,6 +148,9 @@ export type Booking = typeof bookings.$inferSelect;
 
 export type InsertRefundRequest = typeof refundRequests.$inferInsert;
 export type RefundRequest = typeof refundRequests.$inferSelect;
+
+export type InsertRetreatApplication = typeof retreat_applications.$inferInsert;
+export type RetreatApplication = typeof retreat_applications.$inferSelect;
 
 // Zod schemas
 export const insertUserSchema = createInsertSchema(users).omit({
@@ -157,4 +176,15 @@ export const insertRefundRequestSchema = createInsertSchema(refundRequests).omit
   id: true,
   createdAt: true,
   updatedAt: true,
+});
+
+export const insertRetreatApplicationSchema = z.object({
+  name: z.string().min(1, "Название ретрита обязательно"),
+  location: z.string().min(1, "Местоположение обязательно"),
+  description: z.string().min(1, "Описание ретрита обязательно"),
+  price: z.number().positive("Цена должна быть положительным числом"),
+  duration: z.number().int().positive("Длительность должна быть положительным числом"),
+  capacity: z.number().int().positive("Количество участников должно быть положительным числом"),
+  email: z.string().email("Некорректный email адрес"),
+  phone: z.string().optional(),
 });

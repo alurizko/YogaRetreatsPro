@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import Stripe from "stripe";
 // Удалён импорт setupAuth, isAuthenticated из ./replitAuth
-import { insertRetreatSchema, insertBookingSchema, insertRefundRequestSchema } from "@shared/schema";
+import { insertRetreatSchema, insertBookingSchema, insertRefundRequestSchema, insertRetreatApplicationSchema, retreat_applications } from "@shared/schema";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { users } from "@shared/schema";
@@ -28,6 +28,67 @@ if (process.env.STRIPE_SECRET_KEY) {
 const resetTokens: Record<string, string> = {};
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // API endpoint для заявок организаторов ретритов (публичный, без аутентификации)
+  app.post("/api/retreat-applications", async (req, res) => {
+    try {
+      console.log("Получена заявка организатора:", req.body);
+      
+      // Валидируем данные с помощью Zod схемы
+      const validatedData = insertRetreatApplicationSchema.parse(req.body);
+      
+      // Временно сохраняем в файл вместо БД (пока не настроим подключение)
+      const fs = require('fs');
+      const path = require('path');
+      
+      const applicationWithId = {
+        id: Date.now(), // Временный ID
+        ...validatedData,
+        status: 'pending',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
+      // Сохраняем в файл applications.json
+      const applicationsFile = path.join(process.cwd(), 'applications.json');
+      let applications = [];
+      
+      try {
+        if (fs.existsSync(applicationsFile)) {
+          const data = fs.readFileSync(applicationsFile, 'utf8');
+          applications = JSON.parse(data);
+        }
+      } catch (err) {
+        console.log('Создаем новый файл applications.json');
+      }
+      
+      applications.push(applicationWithId);
+      fs.writeFileSync(applicationsFile, JSON.stringify(applications, null, 2));
+      
+      console.log("Заявка успешно сохранена в файл:", applicationWithId);
+      
+      res.status(201).json({
+        success: true,
+        message: "Заявка успешно отправлена! Мы свяжемся с вами в течение 24 часов.",
+        application: applicationWithId
+      });
+    } catch (error) {
+      console.error("Ошибка при сохранении заявки:", error);
+      
+      if (error instanceof Error && error.name === 'ZodError') {
+        return res.status(400).json({
+          success: false,
+          message: "Ошибка валидации данных",
+          errors: error
+        });
+      }
+      
+      res.status(500).json({
+        success: false,
+        message: "Ошибка сервера при обработке заявки"
+      });
+    }
+  });
+
   // Настройка express-session и passport
   app.use(session({
     secret: process.env.SESSION_SECRET || "your_secret",
@@ -684,7 +745,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // (удалён временный эндпоинт /api/delete-user)
+  // API endpoint для заявок организаторов ретритов
+  app.post("/api/retreat-applications", async (req, res) => {
+    try {
+      console.log("Получена заявка организатора:", req.body);
+      
+      // Валидируем данные с помощью Zod схемы
+      const validatedData = insertRetreatApplicationSchema.parse(req.body);
+      
+      // Временно сохраняем в файл вместо БД (пока не настроим подключение)
+      const fs = require('fs');
+      const path = require('path');
+      
+      const applicationWithId = {
+        id: Date.now(), // Временный ID
+        ...validatedData,
+        status: 'pending',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
+      // Сохраняем в файл applications.json
+      const applicationsFile = path.join(process.cwd(), 'applications.json');
+      let applications = [];
+      
+      try {
+        if (fs.existsSync(applicationsFile)) {
+          const data = fs.readFileSync(applicationsFile, 'utf8');
+          applications = JSON.parse(data);
+        }
+      } catch (err) {
+        console.log('Создаем новый файл applications.json');
+      }
+      
+      applications.push(applicationWithId);
+      fs.writeFileSync(applicationsFile, JSON.stringify(applications, null, 2));
+      
+      console.log("Заявка успешно сохранена в файл:", applicationWithId);
+      
+      res.status(201).json({
+        success: true,
+        message: "Заявка успешно отправлена! Мы свяжемся с вами в течение 24 часов.",
+        application: applicationWithId
+      });
+    } catch (error) {
+      console.error("Ошибка при сохранении заявки:", error);
+      
+      if (error instanceof Error && error.name === 'ZodError') {
+        return res.status(400).json({
+          success: false,
+          message: "Ошибка валидации данных",
+          errors: error
+        });
+      }
+      
+      res.status(500).json({
+        success: false,
+        message: "Ошибка сервера при обработке заявки"
+      });
+    }
+  });
 
   // Обработка всех остальных маршрутов (кроме API) — возвращаем пустой ответ
   app.get('*', (req, res) => {

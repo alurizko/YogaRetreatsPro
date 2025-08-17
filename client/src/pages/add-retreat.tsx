@@ -26,10 +26,50 @@ export default function AddRetreat() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Данные ретрита:", formData);
-    // Здесь будет логика отправки данных
+
+    try {
+      console.log("Отправляем данные ретрита:", formData);
+
+      // Преобразуем строковые значения в числа для числовых полей
+      const dataToSend = {
+        ...formData,
+        price: parseFloat(formData.price) || 0,
+        duration: parseInt(formData.duration) || 0,
+        capacity: parseInt(formData.capacity) || 0,
+      };
+
+      const response = await fetch("/api/retreat-applications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dataToSend),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        alert("Заявка успешно отправлена! Мы свяжемся с вами в течение 24 часов.");
+        // Очищаем форму после успешной отправки
+        setFormData({
+          name: "",
+          location: "",
+          description: "",
+          price: "",
+          duration: "",
+          capacity: "",
+          email: "",
+          phone: ""
+        });
+      } else {
+        throw new Error(result.message || "Ошибка при отправке заявки");
+      }
+    } catch (error) {
+      console.error("Ошибка при отправке заявки:", error);
+      alert("Произошла ошибка при отправке заявки. Пожалуйста, попробуйте еще раз.");
+    }
   };
 
   return (
@@ -122,9 +162,9 @@ export default function AddRetreat() {
           <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
             Заполните форму ниже, и мы свяжемся с вами в течение 24 часов для обсуждения деталей вашего ретрита
           </p>
-          
+
           {/* Main CTA Button */}
-          <Button 
+          <Button
             onClick={() => document.getElementById('contact-form')?.scrollIntoView({ behavior: 'smooth' })}
             className="bg-[#20B2AA] hover:bg-[#1A9B94] text-white text-xl font-bold py-6 px-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
           >
@@ -197,7 +237,7 @@ export default function AddRetreat() {
                 <div className="grid md:grid-cols-3 gap-6">
                   <div>
                     <Label htmlFor="price" className="text-sm font-semibold text-gray-700">
-                      Цена (руб.) *
+                      Цена (грн.) *
                     </Label>
                     <Input
                       id="price"
@@ -205,7 +245,7 @@ export default function AddRetreat() {
                       type="number"
                       value={formData.price}
                       onChange={handleInputChange}
-                      placeholder="50000"
+                      placeholder="5000 грн"
                       className="mt-2"
                       required
                     />
@@ -227,7 +267,7 @@ export default function AddRetreat() {
                   </div>
                   <div>
                     <Label htmlFor="capacity" className="text-sm font-semibold text-gray-700">
-                      Макс. участников *
+                      Максимальное количество участников *
                     </Label>
                     <Input
                       id="capacity"
@@ -268,18 +308,23 @@ export default function AddRetreat() {
                       type="tel"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      placeholder="+7 (999) 123-45-67"
+                      placeholder="+38 (099) 123-45-67"
                       className="mt-2"
                     />
                   </div>
                 </div>
 
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="w-full bg-[#20B2AA] hover:bg-[#1A9B94] text-white font-bold py-4 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   Отправить заявку
                 </Button>
+                
+                {/* Примечание об обязательных полях */}
+                <p className="text-sm text-gray-500 text-center mt-4">
+                  * Поля, отмеченные звездочкой, обязательны для заполнения
+                </p>
               </form>
             </CardContent>
           </Card>

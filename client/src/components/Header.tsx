@@ -10,6 +10,7 @@ import AuthModal from "./AuthModal";
 export default function Header() {
   const { isAuthenticated, user } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isRegisterModalOpen, setRegisterModalOpen] = useState(false);
@@ -226,6 +227,7 @@ export default function Header() {
               <DropdownMenuContent align="center" className="w-56 bg-white border border-gray-200 rounded-lg shadow-lg">
                 <DropdownMenuItem 
                   onClick={() => {
+                    setAuthModalMode('login');
                     setIsAuthModalOpen(true);
                     setDropdownOpen(false);
                   }}
@@ -236,6 +238,7 @@ export default function Header() {
                 <DropdownMenuSeparator className="bg-gray-200" />
                 <DropdownMenuItem 
                   onClick={() => {
+                    setAuthModalMode('register');
                     setIsAuthModalOpen(true);
                     setDropdownOpen(false);
                   }}
@@ -285,7 +288,11 @@ export default function Header() {
             </div>
           )}
 
-      <AuthModal open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen} />
+      <AuthModal 
+        open={isAuthModalOpen} 
+        onOpenChange={setIsAuthModalOpen} 
+        initialMode={authModalMode}
+      />
 
       {/* Register Modal */}
       {isRegisterModalOpen && (

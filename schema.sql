@@ -73,3 +73,19 @@ CREATE TABLE faq (
     answer TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- 9. Таблица заявок организаторов ретритов
+CREATE TABLE retreat_applications (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(200) NOT NULL,                    -- Название ретрита
+    location VARCHAR(200) NOT NULL,               -- Местоположение
+    description TEXT NOT NULL,                    -- Описание ретрита
+    price NUMERIC(10,2) NOT NULL,                -- Цена в гривнах
+    duration INTEGER NOT NULL,                    -- Длительность в днях
+    capacity INTEGER NOT NULL,                    -- Максимальное количество участников
+    email VARCHAR(150) NOT NULL,                  -- Email для связи
+    phone VARCHAR(20),                           -- Телефон (необязательное поле)
+    status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')), -- Статус заявки
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
