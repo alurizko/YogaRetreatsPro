@@ -73,15 +73,14 @@ export default function AddRetreat() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#fff6f0] via-white to-[#f0f8f0]">
-      {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-[#20B2AA] to-[#48D1CC] text-white py-20 px-4">
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative max-w-6xl mx-auto text-center">
-          <h1 className="text-5xl font-bold mb-6">
+    <div className="min-h-screen bg-[#fff6f0]">
+      {/* Header Section */}
+      <div className="bg-[#fff6f0] py-12 border-b border-sage-green-200">
+        <div className="max-w-6xl mx-auto px-4 text-center">
+          <h1 className="text-4xl font-bold text-forest-green mb-6">
             Поделитесь своим ретритом с миром
           </h1>
-          <p className="text-xl mb-8 max-w-3xl mx-auto">
+          <p className="text-lg text-soft-gray mb-8 max-w-3xl mx-auto">
             Присоединяйтесь к нашему сообществу организаторов и помогите людям найти свой путь к внутренней гармонии
           </p>
           <div className="flex justify-center space-x-8 text-sm">
@@ -110,8 +109,8 @@ export default function AddRetreat() {
           <div className="grid md:grid-cols-3 gap-8">
             <Card className="text-center p-6 border-0 shadow-lg hover:shadow-xl transition-shadow">
               <CardHeader>
-                <div className="w-16 h-16 bg-[#20B2AA] rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Users className="w-8 h-8 text-white" />
+                <div className="w-16 h-16 bg-sage-green rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Users className="w-8 h-8 text-forest-green" />
                 </div>
                 <CardTitle className="text-xl text-gray-800">Широкая аудитория</CardTitle>
               </CardHeader>
@@ -124,8 +123,8 @@ export default function AddRetreat() {
 
             <Card className="text-center p-6 border-0 shadow-lg hover:shadow-xl transition-shadow">
               <CardHeader>
-                <div className="w-16 h-16 bg-[#20B2AA] rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Star className="w-8 h-8 text-white" />
+                <div className="w-16 h-16 bg-sage-green rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Star className="w-8 h-8 text-forest-green" />
                 </div>
                 <CardTitle className="text-xl text-gray-800">Простое управление</CardTitle>
               </CardHeader>
@@ -138,8 +137,8 @@ export default function AddRetreat() {
 
             <Card className="text-center p-6 border-0 shadow-lg hover:shadow-xl transition-shadow">
               <CardHeader>
-                <div className="w-16 h-16 bg-[#20B2AA] rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Heart className="w-8 h-8 text-white" />
+                <div className="w-16 h-16 bg-sage-green rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Heart className="w-8 h-8 text-forest-green" />
                 </div>
                 <CardTitle className="text-xl text-gray-800">Поддержка экспертов</CardTitle>
               </CardHeader>
@@ -154,19 +153,19 @@ export default function AddRetreat() {
       </div>
 
       {/* Main CTA Section */}
-      <div className="py-20 px-4 bg-gradient-to-r from-[#f8f9fa] to-[#fff6f0]">
+      <div className="py-20 px-4 bg-[#fff6f0]">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-8 text-gray-800">
+          <h2 className="text-4xl font-bold mb-8 text-forest-green">
             Готовы начать?
           </h2>
-          <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
+          <p className="text-xl text-soft-gray mb-12 max-w-2xl mx-auto">
             Заполните форму ниже, и мы свяжемся с вами в течение 24 часов для обсуждения деталей вашего ретрита
           </p>
 
           {/* Main CTA Button */}
           <Button
             onClick={() => document.getElementById('contact-form')?.scrollIntoView({ behavior: 'smooth' })}
-            className="bg-[#20B2AA] hover:bg-[#1A9B94] text-white text-xl font-bold py-6 px-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            className="bg-warm-orange hover:bg-warm-orange/90 text-black text-xl font-bold py-6 px-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
           >
             <Leaf className="w-6 h-6 mr-3" />
             Добавьте свой ретрит
@@ -316,7 +315,7 @@ export default function AddRetreat() {
 
                 <Button
                   type="submit"
-                  className="w-full bg-[#20B2AA] hover:bg-[#1A9B94] text-white font-bold py-4 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="w-full bg-warm-orange hover:bg-warm-orange/90 text-black font-bold py-4 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   Отправить заявку
                 </Button>
@@ -332,15 +331,15 @@ export default function AddRetreat() {
       </div>
 
       {/* Footer CTA */}
-      <div className="bg-gradient-to-r from-[#20B2AA] to-[#48D1CC] text-white py-16 px-4">
+      <div className="bg-[#fff6f0] py-16 px-4 border-t border-sage-green-200">
         <div className="max-w-4xl mx-auto text-center">
-          <h3 className="text-3xl font-bold mb-4">
+          <h3 className="text-3xl font-bold mb-4 text-forest-green">
             Начните свое путешествие уже сегодня
           </h3>
-          <p className="text-lg mb-8">
+          <p className="text-lg mb-8 text-soft-gray">
             Присоединяйтесь к сообществу организаторов, которые меняют жизни людей к лучшему
           </p>
-          <div className="flex justify-center space-x-8 text-sm">
+          <div className="flex justify-center space-x-8 text-sm text-forest-green">
             <div className="flex items-center">
               <MapPin className="w-5 h-5 mr-2" />
               <span>Более 50 стран</span>

@@ -3,7 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Search, Filter, Star, MapPin, Calendar, Users, Heart } from "lucide-react";
 import RetreatCard from "@/components/RetreatCard";
 import type { Retreat } from "@shared/schema";
 
@@ -11,6 +13,14 @@ export default function Retreats() {
   const [searchLocation, setSearchLocation] = useState("");
   const [searchDate, setSearchDate] = useState("");
   const [searchDuration, setSearchDuration] = useState("");
+  const [priceRange, setPriceRange] = useState("");
+  const [retreatType, setRetreatType] = useState("");
+  const [skillLevel, setSkillLevel] = useState("");
+  const [accommodation, setAccommodation] = useState("");
+  const [mealPlan, setMealPlan] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [sortBy, setSortBy] = useState("recommended");
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
 
   const { data: retreats = [], isLoading } = useQuery<Retreat[]>({
     queryKey: ["/api/retreats"],
@@ -25,36 +35,59 @@ export default function Retreats() {
   });
 
   return (
-    <div className="min-h-screen bg-soft-white">
+    <div className="min-h-screen bg-[#fff6f0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-forest-green mb-4">
-            Все ретриты по йоге
+            Незабываемые ретриты по йоге 2025
           </h1>
           <p className="text-lg text-soft-gray max-w-2xl mx-auto">
-            Найдите идеальный ретрит для вашей практики
+            Найдите и забронируйте идеальный ретрит из нашей коллекции проверенных программ
           </p>
+          <div className="flex justify-center items-center gap-6 mt-6 text-sm text-soft-gray">
+            <div className="flex items-center gap-2">
+              <Star className="w-4 h-4 text-warm-orange fill-current" />
+              <span>4.6★ средний рейтинг</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-sage-green" />
+              <span>15,000+ довольных участников</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Heart className="w-4 h-4 text-warm-orange" />
+              <span>95% рекомендуют нас</span>
+            </div>
+          </div>
         </div>
 
         {/* Search Filters */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Main Search Bar */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div>
               <label className="block text-sm font-semibold text-soft-gray mb-2">Место проведения</label>
-              <Input 
-                placeholder="Куда хотите поехать?" 
-                value={searchLocation}
-                onChange={(e) => setSearchLocation(e.target.value)}
-              />
+              <div className="relative">
+                <MapPin className="absolute left-3 top-3 w-4 h-4 text-soft-gray" />
+                <Input 
+                  placeholder="Куда хотите поехать?" 
+                  value={searchLocation}
+                  onChange={(e) => setSearchLocation(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
             </div>
             <div>
               <label className="block text-sm font-semibold text-soft-gray mb-2">Дата начала</label>
-              <Input 
-                type="date" 
-                value={searchDate}
-                onChange={(e) => setSearchDate(e.target.value)}
-              />
+              <div className="relative">
+                <Calendar className="absolute left-3 top-3 w-4 h-4 text-soft-gray" />
+                <Input 
+                  type="date" 
+                  value={searchDate}
+                  onChange={(e) => setSearchDate(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
             </div>
             <div>
               <label className="block text-sm font-semibold text-soft-gray mb-2">Продолжительность</label>
@@ -71,14 +104,169 @@ export default function Retreats() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-end">
-              <Button className="w-full bg-forest-green hover:bg-forest-green/90 text-white font-semibold">
+            <div className="flex items-end gap-2">
+              <Button className="flex-1 bg-warm-orange hover:bg-warm-orange/90 text-black font-semibold">
                 <Search className="w-4 h-4 mr-2" />
                 Искать
               </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowFilters(!showFilters)}
+                className="border-sage-green text-forest-green hover:bg-sage-green/10"
+              >
+                <Filter className="w-4 h-4" />
+              </Button>
             </div>
           </div>
+
+          {/* Advanced Filters */}
+          {showFilters && (
+            <div className="border-t pt-6 mt-6">
+              <h3 className="text-lg font-semibold text-forest-green mb-4">Дополнительные фильтры</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-soft-gray mb-2">Цена за день</label>
+                  <Select value={priceRange} onValueChange={setPriceRange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Любая" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">Любая</SelectItem>
+                      <SelectItem value="0-50">До $50</SelectItem>
+                      <SelectItem value="50-100">$50 - $100</SelectItem>
+                      <SelectItem value="100-200">$100 - $200</SelectItem>
+                      <SelectItem value="200+">Свыше $200</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-soft-gray mb-2">Тип ретрита</label>
+                  <Select value={retreatType} onValueChange={setRetreatType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Все типы" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">Все типы</SelectItem>
+                      <SelectItem value="hatha">Хатха йога</SelectItem>
+                      <SelectItem value="vinyasa">Виньяса</SelectItem>
+                      <SelectItem value="ashtanga">Аштанга</SelectItem>
+                      <SelectItem value="yin">Инь йога</SelectItem>
+                      <SelectItem value="meditation">Медитация</SelectItem>
+                      <SelectItem value="detox">Детокс</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-soft-gray mb-2">Уровень подготовки</label>
+                  <Select value={skillLevel} onValueChange={setSkillLevel}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Любой" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">Любой</SelectItem>
+                      <SelectItem value="beginner">Начинающий</SelectItem>
+                      <SelectItem value="intermediate">Средний</SelectItem>
+                      <SelectItem value="advanced">Продвинутый</SelectItem>
+                      <SelectItem value="all-levels">Все уровни</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-soft-gray mb-2">Размещение</label>
+                  <Select value={accommodation} onValueChange={setAccommodation}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Любое" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">Любое</SelectItem>
+                      <SelectItem value="shared">Общая комната</SelectItem>
+                      <SelectItem value="private">Отдельная комната</SelectItem>
+                      <SelectItem value="luxury">Люкс</SelectItem>
+                      <SelectItem value="camping">Кемпинг</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="mt-6">
+                <label className="block text-sm font-semibold text-soft-gray mb-3">Особенности</label>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                  {[
+                    'Питание включено',
+                    'Массаж',
+                    'Экскурсии',
+                    'Бассейн',
+                    'Пляж рядом',
+                    'Горы',
+                    'Вегетарианское меню',
+                    'Spa-процедуры',
+                    'Трансфер',
+                    'Wi-Fi',
+                    'Йога для начинающих',
+                    'Сертификат'
+                  ].map((feature) => (
+                    <div key={feature} className="flex items-center space-x-2">
+                      <Checkbox 
+                        id={feature}
+                        checked={selectedFeatures.includes(feature)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedFeatures([...selectedFeatures, feature]);
+                          } else {
+                            setSelectedFeatures(selectedFeatures.filter(f => f !== feature));
+                          }
+                        }}
+                      />
+                      <label htmlFor={feature} className="text-sm text-soft-gray cursor-pointer">
+                        {feature}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
+
+        {/* Results Header */}
+        {!isLoading && filteredRetreats.length > 0 && (
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <div>
+              <p className="text-soft-gray">
+                Показано <span className="font-semibold text-forest-green">{filteredRetreats.length}</span> из 500+ ретритов
+              </p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {selectedFeatures.map((feature) => (
+                  <Badge key={feature} variant="secondary" className="bg-sage-green/20 text-forest-green">
+                    {feature}
+                    <button 
+                      onClick={() => setSelectedFeatures(selectedFeatures.filter(f => f !== feature))}
+                      className="ml-2 text-forest-green hover:text-red-500"
+                    >
+                      ×
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-soft-gray">Сортировать:</span>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recommended">Рекомендуемые</SelectItem>
+                  <SelectItem value="price-low">Цена: по возрастанию</SelectItem>
+                  <SelectItem value="price-high">Цена: по убыванию</SelectItem>
+                  <SelectItem value="rating">Рейтинг</SelectItem>
+                  <SelectItem value="date">Ближайшие даты</SelectItem>
+                  <SelectItem value="duration">Продолжительность</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        )}
 
         {/* Results */}
         {isLoading ? (
@@ -95,24 +283,79 @@ export default function Retreats() {
             ))}
           </div>
         ) : filteredRetreats.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-lg text-soft-gray">Ретриты не найдены. Попробуйте изменить критерии поиска.</p>
+          <div className="text-center py-16">
+            <div className="max-w-md mx-auto">
+              <div className="w-24 h-24 mx-auto mb-6 bg-sage-green/20 rounded-full flex items-center justify-center">
+                <Search className="w-12 h-12 text-sage-green" />
+              </div>
+              <h3 className="text-xl font-semibold text-forest-green mb-2">Ретриты не найдены</h3>
+              <p className="text-soft-gray mb-6">Попробуйте изменить критерии поиска или сбросить фильтры</p>
+              <Button 
+                onClick={() => {
+                  setSearchLocation("");
+                  setSearchDate("");
+                  setSearchDuration("");
+                  setPriceRange("");
+                  setRetreatType("");
+                  setSkillLevel("");
+                  setAccommodation("");
+                  setSelectedFeatures([]);
+                }}
+                className="bg-warm-orange hover:bg-warm-orange/90 text-black"
+              >
+                Сбросить фильтры
+              </Button>
+            </div>
           </div>
         ) : (
-          <>
-            <div className="flex justify-between items-center mb-6">
-              <p className="text-soft-gray">
-                Найдено {filteredRetreats.length} ретрит{filteredRetreats.length > 1 ? 'ов' : ''}
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredRetreats.map((retreat: Retreat) => (
-                <RetreatCard key={retreat.id} retreat={retreat} />
-              ))}
-            </div>
-          </>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredRetreats.map((retreat: Retreat) => (
+              <RetreatCard key={retreat.id} retreat={retreat} />
+            ))}
+          </div>
         )}
+
+        {/* Trust Signals Section */}
+        <div className="mt-16 bg-white rounded-xl shadow-lg p-8">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-forest-green mb-4">Путешественники доверяют нам</h2>
+            <p className="text-soft-gray">Более 15,000 участников выбрали YogaRetreatPro для своих незабываемых путешествий</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div>
+              <div className="text-3xl font-bold text-warm-orange mb-2">15,000+</div>
+              <div className="text-sm text-soft-gray">Довольных участников</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-warm-orange mb-2">95%</div>
+              <div className="text-sm text-soft-gray">Рекомендуют нас друзьям</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-warm-orange mb-2">4.6★</div>
+              <div className="text-sm text-soft-gray">Средний рейтинг организаторов</div>
+            </div>
+          </div>
+          
+          <div className="mt-8 p-6 bg-sage-green/10 rounded-lg">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0">
+                <div className="w-12 h-12 bg-warm-orange rounded-full flex items-center justify-center">
+                  <Heart className="w-6 h-6 text-white" />
+                </div>
+              </div>
+              <div>
+                <h3 className="font-semibold text-forest-green mb-2">Почему выбирают нас?</h3>
+                <ul className="text-sm text-soft-gray space-y-1">
+                  <li>✓ Тщательно отобранные ретриты и проверенные организаторы</li>
+                  <li>✓ Реальные отзывы от участников</li>
+                  <li>✓ Лучшие цены и гарантия возврата средств</li>
+                  <li>✓ Поддержка 24/7 на русском языке</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

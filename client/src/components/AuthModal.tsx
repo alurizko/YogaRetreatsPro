@@ -13,6 +13,10 @@ interface AuthModalProps {
 export default function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthModalProps) {
   const [isLogin, setIsLogin] = useState(initialMode === 'login');
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   // Синхронизируем режим при изменении initialMode
   useEffect(() => {
@@ -48,6 +52,35 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login' }:
       setForgotError(err.message || "Ошибка отправки запроса");
     } finally {
       setForgotLoading(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    // Если пользователь переключился в режим регистрации, отправляем на полноценную страницу
+    if (!isLogin) {
+      window.location.href = "/auth";
+      return;
+    }
+
+    setSubmitLoading(true);
+    setSubmitError("");
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+        credentials: "include",
+      });
+      let data: any = null;
+      try { data = await res.json(); } catch {}
+      if (!res.ok) throw new Error((data && data.message) || "Ошибка входа");
+      onOpenChange(false);
+      // Обновляем страницу, чтобы подтянулось состояние авторизации
+      window.location.reload();
+    } catch (err: any) {
+      setSubmitError(err.message || "Ошибка входа");
+    } finally {
+      setSubmitLoading(false);
     }
   };
 
@@ -95,55 +128,73 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login' }:
           </div>
 
           <div className="px-6 pb-6 space-y-4">
-            {/* Email Input */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email
-              </label>
-              <Input
-                type="email"
-                placeholder="например john@smith.com"
-                className="w-full h-12 border-gray-300 rounded-md focus:border-[#20B2AA] focus:ring-[#20B2AA]"
-              />
-            </div>
-
-            {/* Password Input */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Пароль
-              </label>
-              <div className="relative">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmit();
+              }}
+              className="space-y-4"
+            >
+              {/* Email Input */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email
+                </label>
                 <Input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Введите ваш пароль"
-                  className="w-full h-12 border-gray-300 rounded-md focus:border-[#20B2AA] focus:ring-[#20B2AA] pr-10"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="например john@smith.com"
+                  className="w-full h-12 border-gray-300 rounded-md focus:border-[#20B2AA] focus:ring-[#20B2AA]"
+                  required
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
               </div>
-            </div>
 
-            {/* Forgot Password Link */}
-            {isLogin && (
-              <div className="text-center">
-                <button
-                  onClick={() => setForgotOpen(true)}
-                  className="text-[#20B2AA] hover:underline text-sm font-medium"
-                >
-                  Забыли пароль?
-                </button>
+              {/* Password Input */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Пароль
+                </label>
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Введите ваш пароль"
+                    className="w-full h-12 border-gray-300 rounded-md focus:border-[#20B2AA] focus:ring-[#20B2AA] pr-10"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
               </div>
-            )}
 
-            {/* Main Action Button */}
-            <Button className="w-full h-12 bg-[#20B2AA] hover:bg-[#1A9B94] text-white font-semibold rounded-md transition-colors">
-              {isLogin ? "Войти" : "Зарегистрироваться"}
-            </Button>
+              {/* Forgot Password Link */}
+              {isLogin && (
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => setForgotOpen(true)}
+                    className="text-[#20B2AA] hover:underline text-sm font-medium"
+                  >
+                    Забыли пароль?
+                  </button>
+                </div>
+              )}
+
+              {/* Main Action Button */}
+              {submitError && (
+                <div className="text-red-600 text-sm text-center mb-1">{submitError}</div>
+              )}
+              <Button type="submit" disabled={submitLoading} className="w-full h-12 bg-[#20B2AA] hover:bg-[#1A9B94] text-white font-semibold rounded-md transition-colors disabled:opacity-60">
+                {isLogin ? (submitLoading ? "Вход..." : "Войти") : (submitLoading ? "Открытие..." : "Зарегистрироваться")}
+              </Button>
+            </form>
 
             {/* Social Login Buttons */}
             <div className="space-y-3">
@@ -162,6 +213,7 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login' }:
               </Button>
 
               <Button
+                onClick={() => window.location.href = '/auth'}
                 variant="outline"
                 className="w-full h-12 bg-[#1877F2] hover:bg-[#166FE5] text-white border-[#1877F2] font-medium rounded-md"
               >

@@ -15,6 +15,12 @@ import NotFound from "@/pages/not-found";
 import ResetPassword from "@/pages/reset-password";
 import AuthPage from "@/pages/auth";
 import AddRetreat from "@/pages/add-retreat";
+import InquiriesPage from "@/pages/inquiries";
+import MyTrips from "./pages/my-trips";
+import Support from "./pages/support";
+import RetreatCategories from "./pages/retreat-categories";
+import Profile from "./pages/profile";
+import MyBookings from "./pages/my-bookings";
 
 function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -36,14 +42,19 @@ function Router() {
         <Route path="/retreats" component={Retreats} />
         <Route path="/retreat/:id" component={RetreatDetail} />
         <Route path="/reset-password" component={ResetPassword} />
+        <Route path="/my-trips" component={MyTrips} />
+        <Route path="/support" component={Support} />
+        <Route path="/categories" component={RetreatCategories} />
+        <Route path="/profile" component={Profile} />
+        <Route path="/inquiries" component={InquiriesPage} />
+        <Route path="/my-bookings" component={MyBookings} />
+        <Route path="/my-trips" component={MyTrips} />
         <Route path="/organizer/add-retreat" component={AddRetreat} />
         {isAuthenticated && user?.role === 'organizer' && (
           <Route path="/organizer/dashboard" component={OrganizerDashboard} />
         )}
         {isAuthenticated && (
           <>
-            <Route path="/participant/dashboard" component={ParticipantDashboard} />
-            <Route path="/participant-dashboard" component={ParticipantDashboard} />
             <Route path="/checkout/:retreatId" component={Checkout} />
           </>
         )}

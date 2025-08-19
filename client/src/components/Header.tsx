@@ -40,8 +40,12 @@ export default function Header() {
   
   const [, setLocation] = useLocation();
 
-  const handleLogout = () => {
-    window.location.href = "/api/logout";
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    } catch {}
+    resetAuthCache();
+    window.location.reload();
   };
 
   // Функция для полной очистки данных авторизации
@@ -204,50 +208,80 @@ export default function Header() {
           </div>
           {/* 2. 'Ретриты' */}
           <div className="flex-1 flex justify-center">
-            <Link href="/retreats" className="text-soft-gray hover:text-forest-green transition-colors text-lg font-semibold border-2 border-transparent hover:border-sage-green" style={{display: 'block', opacity: 1, visibility: 'visible', pointerEvents: 'auto', position: 'relative', zIndex: 1000}}>
+            <Link href="/retreats" className="text-forest-green hover:text-warm-orange transition-colors duration-200 font-semibold">
               Ретриты
             </Link>
           </div>
-          {/* 3. 'Найти ретрит' */}
+          {/* 3. 'Категории' */}
           <div className="flex-1 flex justify-center">
-            <Link href="/retreats" className="text-forest-green hover:text-warm-orange transition-colors text-lg font-semibold border-2 border-transparent hover:border-sage-green" style={{display: 'block', opacity: 1, visibility: 'visible', pointerEvents: 'auto', position: 'relative', zIndex: 1000}}>
-              Найти ретрит
+            <Link href="/categories" className="text-forest-green hover:text-warm-orange transition-colors duration-200 font-semibold">
+              Категории
             </Link>
           </div>
-          {/* 4. Login Button with User Icon */}
+          {/* 4. Кнопка входа / аккаунта с выпадающим меню */}
           <div className="flex-1 flex justify-center items-center relative">
-            <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 px-4 py-2 rounded-md border-2 border-gray-300 hover:border-[#20B2AA] bg-white hover:bg-gray-50 transition-colors duration-200 text-forest-green hover:text-[#20B2AA] font-semibold">
-                  <User className="w-5 h-5" />
-                  <span>Войти</span>
-                  <ChevronDown className="w-4 h-4 ml-1" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="center" className="w-56 bg-white border border-gray-200 rounded-lg shadow-lg">
-                <DropdownMenuItem 
-                  onClick={() => {
-                    setAuthModalMode('login');
-                    setIsAuthModalOpen(true);
-                    setDropdownOpen(false);
-                  }}
-                  className="px-4 py-3 hover:bg-[#20B2AA] hover:text-white cursor-pointer flex justify-center"
-                >
-                  <span className="font-semibold">Вход</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-gray-200" />
-                <DropdownMenuItem 
-                  onClick={() => {
-                    setAuthModalMode('register');
-                    setIsAuthModalOpen(true);
-                    setDropdownOpen(false);
-                  }}
-                  className="px-4 py-3 hover:bg-[#20B2AA] hover:text-white cursor-pointer flex justify-center"
-                >
-                  <span className="font-semibold">Регистрация</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {!isAuthenticated ? (
+              <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2 px-4 py-2 rounded-md border-2 border-gray-300 hover:border-[#20B2AA] bg-white hover:bg-gray-50 transition-colors duration-200 text-forest-green hover:text-[#20B2AA] font-semibold">
+                    <User className="w-5 h-5" />
+                    <span>Войти</span>
+                    <ChevronDown className="w-4 h-4 ml-1" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center" className="w-56 bg-white border border-gray-200 rounded-lg shadow-lg">
+                  <DropdownMenuItem 
+                    onClick={() => {
+                      setAuthModalMode('login');
+                      setIsAuthModalOpen(true);
+                      setDropdownOpen(false);
+                    }}
+                    className="px-4 py-3 hover:bg-[#20B2AA] hover:text-white cursor-pointer flex justify-center"
+                  >
+                    <span className="font-semibold">Вход</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-gray-200" />
+                  <DropdownMenuItem 
+                    onClick={() => {
+                      setAuthModalMode('register');
+                      setIsAuthModalOpen(true);
+                      setDropdownOpen(false);
+                    }}
+                    className="px-4 py-3 hover:bg-[#20B2AA] hover:text-white cursor-pointer flex justify-center"
+                  >
+                    <span className="font-semibold">Регистрация</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2 px-4 py-2 rounded-md border-2 border-gray-300 hover:border-[#20B2AA] bg-white hover:bg-gray-50 transition-colors duration-200 text-forest-green hover:text-[#20B2AA] font-semibold">
+                    <User className="w-5 h-5" />
+                    <span>Аккаунт</span>
+                    <ChevronDown className="w-4 h-4 ml-1" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center" className="w-60 bg-white border border-gray-200 rounded-lg shadow-lg">
+                  <DropdownMenuItem className="px-4 py-3 cursor-pointer">
+                    <Link href="/profile" className="w-full">Профиль</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="px-4 py-3 cursor-pointer">
+                    <Link href="/my-bookings" className="w-full">Мои бронирования</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="px-4 py-3 cursor-pointer">
+                    <Link href="/my-trips" className="w-full">Мои поездки</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="px-4 py-3 cursor-pointer">
+                    <Link href="/inquiries" className="w-full">Входящие</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-gray-200" />
+                  <DropdownMenuItem onClick={handleLogout} className="px-4 py-3 cursor-pointer flex justify-center">
+                    <span className="font-semibold text-red-600">Выход</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
           {/* 5. 'Стать организатором' справа с отступом */}
           <div className="flex-1 flex justify-end pr-[40px]">

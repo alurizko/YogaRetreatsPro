@@ -15,6 +15,9 @@ export default function AuthPage() {
   const [registerError, setRegisterError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
   const [registerLoading, setRegisterLoading] = useState(false);
+  const search = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  const initialTab = search.get('tab') === 'register' ? 'register' : 'login';
+  const [tabValue, setTabValue] = useState<'login' | 'register'>(initialTab as 'login' | 'register');
 
   const handleGoogleAuth = (mode: 'login' | 'register') => {
     let url = `/api/auth/google?mode=${mode}`;
@@ -79,8 +82,8 @@ export default function AuthPage() {
         throw new Error(data.message || "Ошибка регистрации");
       }
 
-      // Успешная регистрация - перенаправляем на главную
-      window.location.href = "/";
+      // Успешная регистрация - на дашборд участника
+      window.location.href = "/participant-dashboard";
     } catch (err: any) {
       setRegisterError(err.message || "Ошибка регистрации");
     } finally {
@@ -121,7 +124,7 @@ export default function AuthPage() {
             </div>
 
             {/* Traditional Auth */}
-            <Tabs defaultValue="login" className="w-full">
+            <Tabs value={tabValue} onValueChange={(v:any)=>setTabValue(v)} className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="login">Вход</TabsTrigger>
                 <TabsTrigger value="register">Регистрация</TabsTrigger>

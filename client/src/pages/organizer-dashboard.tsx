@@ -74,7 +74,7 @@ export default function OrganizerDashboard() {
   const totalParticipants = retreats.reduce((sum: number, r: Retreat) => sum + r.currentParticipants, 0);
 
   return (
-    <div className="min-h-screen bg-soft-white">
+    <div className="min-h-screen bg-[#fff6f0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
@@ -227,7 +227,7 @@ export default function OrganizerDashboard() {
                     <Button 
                       type="submit" 
                       disabled={createRetreatMutation.isPending}
-                      className="bg-forest-green hover:bg-forest-green/90"
+                      className="bg-warm-orange hover:bg-warm-orange/90 text-black"
                     >
                       {createRetreatMutation.isPending ? "Создание..." : "Создать ретрит"}
                     </Button>

@@ -320,8 +320,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!firstName || !lastName || !email || !password) {
         return res.status(400).json({ message: "Имя, фамилия, email и пароль обязательны" });
       }
+      // нормализуем email
+      const normalizedEmail = String(email).trim().toLowerCase();
       // Проверка, что email не занят
-      const existing = await db.select().from(users).where(eq(users.email, email));
+      const existing = await db.select().from(users).where(eq(users.email, normalizedEmail));
       if (existing.length > 0) {
         return res.status(400).json({ message: "Email уже зарегистрирован" });
       }
@@ -334,14 +336,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         id,
         firstName,
         lastName,
-        email,
+        email: normalizedEmail,
         role: "user",
         password_hash,
       }).returning();
       // Генерация JWT
       const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET!, { expiresIn: "7d" });
       res.cookie('token', token, { httpOnly: true, sameSite: 'lax' });
-      res.json({ user: { id: user.id, email: user.email } });
+      res.json({ token, user: { id: user.id, email: user.email } });
     } catch (error) {
       console.error("Registration error:", error);
       res.status(500).json({ message: "Ошибка регистрации" });
