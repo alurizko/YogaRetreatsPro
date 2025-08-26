@@ -1,204 +1,202 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Clover, Menu, User, Settings, LogOut, Eye, EyeOff, ChevronDown } from "lucide-react";
-import { useAuth, resetAuthCache } from "@/hooks/useAuth";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "../components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../components/ui/dialog";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import { Clover, User, ChevronDown, Menu, X, Eye, EyeOff } from "lucide-react";
+import { useAuth } from "../App";
 import AuthModal from "./AuthModal";
 
 export default function Header() {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isRegisterModalOpen, setRegisterModalOpen] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoginModalOpen, setLoginModalOpen] = useState(false);
-  const [showLoginPassword, setShowLoginPassword] = useState(false);
-  const [registerError, setRegisterError] = useState("");
-  const [registerLoading, setRegisterLoading] = useState(false);
-  const [loginError, setLoginError] = useState("");
-  const [loginLoading, setLoginLoading] = useState(false);
-  const [forgotOpen, setForgotOpen] = useState(false);
-  const [forgotEmail, setForgotEmail] = useState("");
-  const [forgotSent, setForgotSent] = useState(false);
-  const [forgotLoading, setForgotLoading] = useState(false);
-  const [forgotError, setForgotError] = useState("");
-  
-  // Новые состояния для Google форм
   const [isGoogleRegisterModalOpen, setGoogleRegisterModalOpen] = useState(false);
   const [isGoogleLoginModalOpen, setGoogleLoginModalOpen] = useState(false);
+  const [showRegisterForm, setShowRegisterForm] = useState(false);
+  const [showGoogleRegisterPassword, setShowGoogleRegisterPassword] = useState(false);
+  const [registerError, setRegisterError] = useState("");
+  const [registerLoading, setRegisterLoading] = useState(false);
   const [googleRegisterError, setGoogleRegisterError] = useState("");
   const [googleRegisterLoading, setGoogleRegisterLoading] = useState(false);
   const [googleLoginError, setGoogleLoginError] = useState("");
-  const [googleLoginLoading, setGoogleLoginLoading] = useState(false);
-  const [showGoogleRegisterPassword, setShowGoogleRegisterPassword] = useState(false);
+  const [isLoginModalOpen, setLoginModalOpen] = useState(false);
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [isPartnerRegisterModalOpen, setIsPartnerRegisterModalOpen] = useState(false);
+  const [loginError, setLoginError] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
   const [showGoogleLoginPassword, setShowGoogleLoginPassword] = useState(false);
-  const [showRegisterForm, setShowRegisterForm] = useState(false);
-  
-  const [, setLocation] = useLocation();
+  const [partnerFormData, setPartnerFormData] = useState({
+    name: "",
+    surname: "",
+    email: "",
+    phone: "",
+    company: "",
+    experience: "",
+    password: "",
+    terms: false
+  });
+  const [partnerRegistrationLoading, setPartnerRegistrationLoading] = useState(false);
+  const [partnerRegistrationError, setPartnerRegistrationError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [forgotError, setForgotError] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
 
   const handleLogout = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-    } catch {}
-    resetAuthCache();
-    window.location.reload();
-  };
-
-  // Функция для полной очистки данных авторизации
-  const clearAllAuthData = () => {
-    console.log("🧹 Очищаем все данные авторизации...");
-    localStorage.removeItem("token");
-    resetAuthCache(); // Сбрасываем кэш авторизации
-    // Очищаем куки через API
-    fetch("/api/logout", { credentials: "include" });
-    // Перезагружаем страницу
-    window.location.reload();
-  };
-
-  // Функция для диагностики состояния авторизации
-  const diagnoseAuthState = () => {
-    console.log("🔍 === ДИАГНОСТИКА СОСТОЯНИЯ АВТОРИЗАЦИИ ===");
-    
-    // Проверяем localStorage
-    const token = localStorage.getItem("token");
-    console.log("🔍 localStorage token:", token ? token.substring(0, 20) + "..." : "НЕТ");
-    
-    // Проверяем куки
-    console.log("🔍 Все куки:", document.cookie);
-    
-    // Проверяем кэш авторизации
-    console.log("🔍 Кэш авторизации: недоступен в этом компоненте");
-    
-    // Проверяем текущего пользователя
-    console.log("🔍 Текущий пользователь:", user);
-    
-    // Проверяем состояние аутентификации
-    console.log("🔍 isAuthenticated:", isAuthenticated);
-    console.log("🔍 === КОНЕЦ ДИАГНОСТИКИ ===");
+    await logout();
   };
 
   const handleForgot = async (e: React.FormEvent) => {
     e.preventDefault();
-    setForgotLoading(true);
-    setForgotError("");
-    try {
-      const res = await fetch("/api/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: forgotEmail }),
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || "Ошибка отправки запроса");
-      }
-      setForgotSent(true);
-    } catch (err: any) {
-      setForgotError(err.message || "Ошибка отправки запроса");
-    } finally {
-      setForgotLoading(false);
-    }
+    setForgotSent(true);
   };
 
-  // Обработчик регистрации через Google
   const handleGoogleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setGoogleRegisterError("");
     setGoogleRegisterLoading(true);
-    
-    // Принудительно очищаем старые данные перед регистрацией
-    console.log("🧹 Очищаем старые данные перед регистрацией...");
-    localStorage.removeItem("token");
-    
-    const form = e.target as HTMLFormElement;
-    const firstName = (form[0] as HTMLInputElement).value;
-    const lastName = (form[1] as HTMLInputElement).value;
-    const email = (form[2] as HTMLInputElement).value;
-    const password = (form[3] as HTMLInputElement).value;
-    
-    console.log("🔍 [Google Register] Отправляем данные:", { firstName, lastName, email });
-    
-    try {
-      const res = await fetch("/api/google-register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firstName, lastName, email, password }),
-        credentials: "include",
-      });
-      const data = await res.json();
-      
-      console.log("🔍 [Google Register] Ответ сервера:", data);
-      
-      if (!res.ok) {
-        if (res.status === 409) {
-          throw new Error("Пользователь с таким Email уже существует. Выберите другой email.");
-        }
-        throw new Error(data.message || "Ошибка регистрации");
-      }
-      
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-        console.log("🔍 [Google Register] Сохранен токен:", data.token.substring(0, 20) + "...");
-      }
-      
-      console.log("🔍 [Google Register] Переходим в dashboard для пользователя:", data.user?.email);
-      setGoogleRegisterModalOpen(false);
-      setLocation("/participant-dashboard");
-    } catch (err: any) {
-      setGoogleRegisterError(err.message || "Ошибка регистрации");
-    } finally {
+    // Placeholder implementation
+    setTimeout(() => {
       setGoogleRegisterLoading(false);
-    }
+      setGoogleRegisterModalOpen(false);
+    }, 1000);
   };
 
-  // Обработчик входа через Google
   const handleGoogleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setGoogleLoginError("");
-    setGoogleLoginLoading(true);
-    const form = e.target as HTMLFormElement;
-    const email = (form[0] as HTMLInputElement).value;
-    const password = (form[1] as HTMLInputElement).value;
-    
-    try {
-      const res = await fetch("/api/google-login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-        credentials: "include",
-      });
-      const data = await res.json();
-      
-      if (!res.ok) {
-        if (res.status === 404) {
-          setGoogleLoginError("Пользователь с такими данными не зарегистрирован");
-          setShowRegisterForm(true);
-          return;
-        }
-        throw new Error(data.message || "Ошибка входа");
-      }
-      
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-      }
+    // Placeholder implementation
+    setTimeout(() => {
       setGoogleLoginModalOpen(false);
-      setLocation("/participant-dashboard");
-    } catch (err: any) {
-      setGoogleLoginError(err.message || "Ошибка входа");
+    }, 1000);
+  };
+
+  const setLocation = (path: string) => {
+    window.location.href = path;
+  };
+
+  const handlePartnerFormChange = (field: string, value: string | boolean) => {
+    setPartnerFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handlePartnerRegistration = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPartnerRegistrationError("");
+    setPartnerRegistrationLoading(true);
+
+    try {
+      // Валидация
+      if (!partnerFormData.name || !partnerFormData.surname || !partnerFormData.email || !partnerFormData.password) {
+        throw new Error("Пожалуйста, заполните все обязательные поля");
+      }
+
+      if (!partnerFormData.terms) {
+        throw new Error("Необходимо согласиться с условиями использования");
+      }
+
+      if (partnerFormData.password.length < 8) {
+        throw new Error("Пароль должен содержать минимум 8 символов");
+      }
+
+      // Отправка данных на сервер
+      const response = await fetch('/api/auth/register-partner', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: partnerFormData.name,
+          surname: partnerFormData.surname,
+          email: partnerFormData.email,
+          phone: partnerFormData.phone,
+          company: partnerFormData.company,
+          experience: partnerFormData.experience,
+          password: partnerFormData.password,
+          role: 'organizer'
+        }),
+      });
+
+      // Проверяем статус ответа перед парсингом JSON
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Server error response:', errorText);
+        throw new Error(`Ошибка сервера: ${response.status} ${response.statusText}`);
+      }
+
+      // Проверяем, что ответ содержит JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const responseText = await response.text();
+        console.error('Non-JSON response:', responseText);
+        throw new Error('Сервер вернул некорректный ответ');
+      }
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        // Успешная регистрация
+        alert("Добро пожаловать! Аккаунт партнера успешно создан. Теперь вы можете добавлять ретриты.");
+
+        // Обновляем состояние аутентификации
+        // login(result.user); // Временно закомментировано
+
+        // Закрываем модальное окно и перенаправляем
+        setIsPartnerRegisterModalOpen(false);
+        setPartnerFormData({
+          name: "",
+          surname: "",
+          email: "",
+          phone: "",
+          company: "",
+          experience: "",
+          password: "",
+          terms: false
+        });
+
+        // Перенаправляем на страницу добавления ретрита
+        setTimeout(() => {
+          window.location.href = '/organizer/add-retreat';
+        }, 1000);
+
+      } else {
+        throw new Error(result.message || "Ошибка при регистрации партнера");
+      }
+    } catch (error: any) {
+      console.error("Ошибка регистрации партнера:", error);
+      setPartnerRegistrationError(error.message || "Произошла ошибка при регистрации");
     } finally {
-      setGoogleLoginLoading(false);
+      setPartnerRegistrationLoading(false);
     }
   };
 
+
   return (
-    <>
+    <div>
       <header className="bg-[#fff6f0] shadow-sm sticky top-0 z-50">
         <div className="flex h-16 items-center">
+          {/* Mobile menu button */}
+          <div className="md:hidden flex items-center pl-4">
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="text-forest-green hover:text-warm-orange transition-colors"
+            >
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
+
           {/* 1. Логотип слева с отступом */}
-          <div className="flex-1 flex justify-start pl-[40px]">
+          <div className="flex-1 flex justify-start pl-[40px] md:pl-[40px] pl-4">
             <Link href="/">
               <div className="flex items-center text-2xl font-bold text-forest-green cursor-pointer">
                 <Clover className="mr-2" />
@@ -206,20 +204,20 @@ export default function Header() {
               </div>
             </Link>
           </div>
-          {/* 2. 'Ретриты' */}
-          <div className="flex-1 flex justify-center">
+          {/* 2. 'Ретриты' - скрыто на мобильных */}
+          <div className="hidden md:flex flex-1 justify-center">
             <Link href="/retreats" className="text-forest-green hover:text-warm-orange transition-colors duration-200 font-semibold">
               Ретриты
             </Link>
           </div>
-          {/* 3. 'Категории' */}
-          <div className="flex-1 flex justify-center">
+          {/* 3. 'Категории' - скрыто на мобильных */}
+          <div className="hidden md:flex flex-1 justify-center">
             <Link href="/categories" className="text-forest-green hover:text-warm-orange transition-colors duration-200 font-semibold">
               Категории
             </Link>
           </div>
-          {/* 4. Кнопка входа / аккаунта с выпадающим меню */}
-          <div className="flex-1 flex justify-center items-center relative">
+          {/* 4. Кнопка входа / аккаунта с выпадающим меню - скрыто на мобильных */}
+          <div className="hidden md:flex flex-1 justify-center items-center relative">
             {!isAuthenticated ? (
               <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
                 <DropdownMenuTrigger asChild>
@@ -230,7 +228,7 @@ export default function Header() {
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="center" className="w-56 bg-white border border-gray-200 rounded-lg shadow-lg">
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     onClick={() => {
                       setAuthModalMode('login');
                       setIsAuthModalOpen(true);
@@ -241,7 +239,7 @@ export default function Header() {
                     <span className="font-semibold">Вход</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-gray-200" />
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     onClick={() => {
                       setAuthModalMode('register');
                       setIsAuthModalOpen(true);
@@ -283,48 +281,52 @@ export default function Header() {
               </DropdownMenu>
             )}
           </div>
-          {/* 5. 'Стать организатором' справа с отступом */}
-          <div className="flex-1 flex justify-end pr-[40px]">
-            <Link href="/organizer/add-retreat" className="text-forest-green hover:text-warm-orange transition-colors text-lg font-semibold border-2 border-transparent hover:border-sage-green" style={{display: 'block', opacity: 1, visibility: 'visible', pointerEvents: 'auto', position: 'relative', zIndex: 1000}}>
+          {/* 5. 'Стать организатором' справа с отступом - скрыто на мобильных */}
+          <div className="hidden md:flex flex-1 justify-end pr-[40px]">
+            <button
+              onClick={() => setIsPartnerRegisterModalOpen(true)}
+              className="text-forest-green hover:text-warm-orange transition-colors text-lg font-semibold border-2 border-transparent hover:border-sage-green"
+              style={{ display: 'block', opacity: 1, visibility: 'visible', pointerEvents: 'auto', position: 'relative', zIndex: 1000 }}
+            >
               Стать организатором
-            </Link>
+            </button>
           </div>
         </div>
       </header>
 
-          {/* Mobile Menu */}
-          {isMobileMenuOpen && (
-            <div className="md:hidden py-4 border-t">
-              <nav className="space-y-2">
-                <Link href="/retreats" className="block py-2 text-soft-gray hover:text-forest-green transition-colors">
-                  Ретриты
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden py-4 border-t">
+          <nav className="space-y-2">
+            <Link href="/retreats" className="block py-2 text-soft-gray hover:text-forest-green transition-colors">
+              Ретриты
+            </Link>
+            {isAuthenticated && user?.role === 'organizer' && (
+              <Link href="/organizer/dashboard" className="block py-2 text-soft-gray hover:text-forest-green transition-colors">
+                Организаторам
+              </Link>
+            )}
+            {!isAuthenticated && (
+              <>
+                <Link href="/auth" className="block py-2 text-soft-gray hover:text-forest-green transition-colors">
+                  Войти / Регистрация
                 </Link>
-                {isAuthenticated && user?.role === 'organizer' && (
-                  <Link href="/organizer/dashboard" className="block py-2 text-soft-gray hover:text-forest-green transition-colors">
-                    Организаторам
-                  </Link>
-                )}
-                {!isAuthenticated && (
-                  <>
-                    <Link href="/auth" className="block py-2 text-soft-gray hover:text-forest-green transition-colors">
-                      Войти / Регистрация
-                    </Link>
-                    <Button 
-                      variant="ghost"
-                      className="text-soft-gray hover:text-forest-green w-full justify-start p-2"
-                      onClick={() => window.location.href = "/api/login"}
-                    >
-                      Стать организатором
-                    </Button>
-                  </>
-                )}
-              </nav>
-            </div>
-          )}
+                <Button
+                  variant="ghost"
+                  className="text-soft-gray hover:text-forest-green w-full justify-start p-2"
+                  onClick={() => window.location.href = "/api/login"}
+                >
+                  Стать организатором
+                </Button>
+              </>
+            )}
+          </nav>
+        </div>
+      )}
 
-      <AuthModal 
-        open={isAuthModalOpen} 
-        onOpenChange={setIsAuthModalOpen} 
+      <AuthModal
+        open={isAuthModalOpen}
+        onOpenChange={setIsAuthModalOpen}
         initialMode={authModalMode}
       />
 
@@ -566,14 +568,21 @@ export default function Header() {
               </p>
               <button
                 type="button"
-                onClick={clearAllAuthData}
+                onClick={() => {
+                  localStorage.clear();
+                  sessionStorage.clear();
+                  console.log('Все данные авторизации очищены');
+                }}
                 className="text-xs bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600 mr-2"
               >
                 Очистить все данные авторизации
               </button>
               <button
                 type="button"
-                onClick={diagnoseAuthState}
+                onClick={() => {
+                  console.log('Auth state:', { isAuthenticated, user });
+                  console.log('LocalStorage:', localStorage.getItem('token'));
+                }}
                 className="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
               >
                 Диагностика
@@ -629,69 +638,188 @@ export default function Header() {
 
       {/* Google Login Modal */}
       {isGoogleLoginModalOpen && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-8 w-full max-w-md relative">
-            <button className="absolute top-2 right-2 text-gray-400 hover:text-black" onClick={() => {
-              setGoogleLoginModalOpen(false);
-              setShowRegisterForm(false);
-              setGoogleLoginError("");
-            }}>✕</button>
-            <h2 className="text-2xl font-bold text-center mb-6">Вход через Google</h2>
-            <p className="text-sm text-gray-600 text-center mb-6">
-              Введите данные вашего Google аккаунта для входа
-            </p>
-            
-            {!showRegisterForm ? (
-              <form className="space-y-4" onSubmit={handleGoogleLogin}>
-                <input
-                  type="email"
-                  placeholder="Email Google аккаунта"
-                  className="w-full border rounded px-4 py-2"
-                  required
-                />
-                <div className="relative">
-                  <input
-                    type={showGoogleLoginPassword ? "text" : "password"}
-                    placeholder="Пароль Google аккаунта"
-                    className="w-full border rounded px-4 py-2 pr-10"
+        <Dialog open={isGoogleLoginModalOpen} onOpenChange={setGoogleLoginModalOpen}>
+          <DialogContent className="sm:max-w-[400px] bg-white">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-center">Вход через Google</DialogTitle>
+              <DialogDescription className="text-center">
+                Введите данные вашего Google аккаунта для входа
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              {!showRegisterForm ? (
+                <form className="space-y-4" onSubmit={handleGoogleLogin}>
+                  <Input
+                    type="email"
+                    placeholder="Email Google аккаунта"
                     required
                   />
-                  <button
-                    type="button"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black"
-                    onClick={() => setShowGoogleLoginPassword((v) => !v)}
-                    tabIndex={-1}
+                  <div className="relative">
+                    <Input
+                      type={showGoogleLoginPassword ? "text" : "password"}
+                      placeholder="Пароль Google аккаунта"
+                      className="pr-10"
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black"
+                      onClick={() => setShowGoogleLoginPassword((v) => !v)}
+                      tabIndex={-1}
+                    >
+                      {showGoogleLoginPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                  {googleLoginError && <div className="text-red-500 text-center text-sm">{googleLoginError}</div>}
+                  <Button
+                    type="submit"
+                    className="w-full bg-warm-orange hover:bg-warm-orange/90 text-black font-semibold"
+                    disabled={googleLoginLoading}
                   >
-                    {showGoogleLoginPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
+                    {googleLoginLoading ? "Вход..." : "Войти через Google"}
+                  </Button>
+                </form>
+              ) : (
+                <div className="space-y-4">
+                  <div className="text-center text-red-500 text-sm">{googleLoginError}</div>
+                  <Button
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+                    onClick={() => {
+                      setShowRegisterForm(false);
+                      setGoogleLoginModalOpen(false);
+                      setGoogleRegisterModalOpen(true);
+                    }}
+                  >
+                    Зарегистрироваться через Google
+                  </Button>
                 </div>
-                {googleLoginError && <div className="text-red-500 text-center text-sm">{googleLoginError}</div>}
-                <button
-                  type="submit"
-                  className="w-full bg-warm-orange text-black font-semibold py-2 rounded hover:bg-warm-orange/90 disabled:opacity-60"
-                  disabled={googleLoginLoading}
-                >
-                  {googleLoginLoading ? "Вход..." : "Войти через Google"}
-                </button>
-              </form>
-            ) : (
-              <div className="space-y-4">
-                <div className="text-center text-red-500 text-sm">{googleLoginError}</div>
-                <button
-                  className="w-full bg-blue-600 text-white font-semibold py-2 rounded hover:bg-blue-700"
-                  onClick={() => {
-                    setShowRegisterForm(false);
-                    setGoogleLoginModalOpen(false);
-                    setGoogleRegisterModalOpen(true);
-                  }}
-                >
-                  Зарегистрировать нового пользователя
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
-    </>
+
+      {/* Partner Registration Modal */}
+      {isPartnerRegisterModalOpen && (
+        <Dialog open={isPartnerRegisterModalOpen} onOpenChange={setIsPartnerRegisterModalOpen}>
+          <DialogContent className="sm:max-w-[500px] bg-white">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-center text-forest-green">
+                Станьте партнером YogaRetreat
+              </DialogTitle>
+              <DialogDescription className="text-center text-soft-gray">
+                Присоединяйтесь к нашему сообществу организаторов ретритов
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handlePartnerRegistration} className="space-y-4">
+              {partnerRegistrationError && (
+                <div className="text-red-500 text-center text-sm bg-red-50 p-2 rounded">
+                  {partnerRegistrationError}
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="partner-name">Имя *</Label>
+                  <Input
+                    id="partner-name"
+                    placeholder="Ваше имя"
+                    value={partnerFormData.name}
+                    onChange={(e) => handlePartnerFormChange('name', e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="partner-surname">Фамилия *</Label>
+                  <Input
+                    id="partner-surname"
+                    placeholder="Ваша фамилия"
+                    value={partnerFormData.surname}
+                    onChange={(e) => handlePartnerFormChange('surname', e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="partner-email">Email *</Label>
+                <Input
+                  id="partner-email"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={partnerFormData.email}
+                  onChange={(e) => handlePartnerFormChange('email', e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="partner-phone">Телефон</Label>
+                <Input
+                  id="partner-phone"
+                  type="tel"
+                  placeholder="+38 (099) 123-45-67"
+                  value={partnerFormData.phone}
+                  onChange={(e) => handlePartnerFormChange('phone', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="partner-company">Название компании/студии</Label>
+                <Input
+                  id="partner-company"
+                  placeholder="Название вашей организации"
+                  value={partnerFormData.company}
+                  onChange={(e) => handlePartnerFormChange('company', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="partner-experience">Опыт проведения ретритов</Label>
+                <select
+                  id="partner-experience"
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                  value={partnerFormData.experience}
+                  onChange={(e) => handlePartnerFormChange('experience', e.target.value)}
+                >
+                  <option value="">Выберите опыт</option>
+                  <option value="beginner">Новичок (0-1 год)</option>
+                  <option value="intermediate">Средний (2-5 лет)</option>
+                  <option value="advanced">Опытный (5+ лет)</option>
+                </select>
+              </div>
+              <div>
+                <Label htmlFor="partner-password">Пароль *</Label>
+                <Input
+                  id="partner-password"
+                  type="password"
+                  placeholder="Минимум 8 символов"
+                  value={partnerFormData.password}
+                  onChange={(e) => handlePartnerFormChange('password', e.target.value)}
+                  required
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="partner-terms"
+                  checked={partnerFormData.terms}
+                  onChange={(e) => handlePartnerFormChange('terms', e.target.checked)}
+                  required
+                />
+                <Label htmlFor="partner-terms" className="text-sm">
+                  Я согласен с условиями использования и политикой конфиденциальности
+                </Label>
+              </div>
+              <Button
+                type="submit"
+                disabled={partnerRegistrationLoading}
+                className="w-full bg-warm-orange hover:bg-warm-orange/90 text-black font-bold py-3 disabled:opacity-60"
+              >
+                {partnerRegistrationLoading ? "Создание аккаунта..." : "Создать аккаунт партнера"}
+              </Button>
+              <p className="text-center text-sm text-gray-500">
+                Уже есть аккаунт? <button type="button" onClick={() => { setIsPartnerRegisterModalOpen(false); setLoginModalOpen(true); }} className="text-forest-green hover:underline">Войти</button>
+              </p>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
   );
 }

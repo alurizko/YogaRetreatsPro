@@ -209,7 +209,7 @@ export default function OrganizerDashboard() {
                       <FormItem>
                         <FormLabel>URL изображения (необязательно)</FormLabel>
                         <FormControl>
-                          <Input placeholder="https://example.com/image.jpg" {...field} value={field.value ?? ""} />
+                          <Input placeholder="https://example.com/image.jpg" {...field} value={field.value || ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

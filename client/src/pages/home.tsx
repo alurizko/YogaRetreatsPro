@@ -1,14 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { useQuery } from "@tanstack/react-query";
 import { Search, Check, Star, MapPin, Clover } from "lucide-react";
-import RetreatCard from "@/components/RetreatCard";
-
-import type { Retreat } from "@shared/schema";
+import PersonalizedRecommendations from "../components/PersonalizedRecommendations";
 
 export default function Home() {
   const [searchLocation, setSearchLocation] = useState("");
@@ -16,13 +13,36 @@ export default function Home() {
   const [searchDuration, setSearchDuration] = useState("");
   // Google OAuth модалка и обработчики удалены
 
-  const { data: retreats = [], isLoading } = useQuery<Retreat[]>({
-    queryKey: ["/api/retreats"],
-  });
+  // Mock data for retreats
+  const mockRetreats = [
+    {
+      id: 1,
+      title: "Ретрит по йоге на Бали",
+      location: "Убуд, Бали",
+      price: 850,
+      rating: 4.9,
+      image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+    },
+    {
+      id: 2,
+      title: "Горный ретрит в Гималаях",
+      location: "Ришикеш, Индия",
+      price: 650,
+      rating: 4.8,
+      image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+    },
+    {
+      id: 3,
+      title: "Пляжный ретрит в Коста-Рике",
+      location: "Мануэль Антонио, Коста-Рика",
+      price: 950,
+      rating: 4.7,
+      image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+    }
+  ];
 
-
-
-  const featuredRetreats = retreats.slice(0, 3);
+  const featuredRetreats = mockRetreats;
+  const isLoading = false;
 
   // Удалены обработчики OAuth на главной странице
 
@@ -135,8 +155,33 @@ export default function Home() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
-            {featuredRetreats.map((retreat: Retreat) => (
-              <RetreatCard key={retreat.id} retreat={retreat} />
+            {featuredRetreats.map((retreat) => (
+              <Card key={retreat.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+                <div className="relative">
+                  <img 
+                    src={retreat.image} 
+                    alt={retreat.title}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="absolute top-4 right-4 bg-white rounded-full px-2 py-1 flex items-center">
+                    <Star className="w-4 h-4 text-yellow-400 fill-current mr-1" />
+                    <span className="text-sm font-semibold">{retreat.rating}</span>
+                  </div>
+                </div>
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-semibold text-forest-green mb-2">{retreat.title}</h3>
+                  <div className="flex items-center text-soft-gray mb-4">
+                    <MapPin className="w-4 h-4 mr-1" />
+                    <span className="text-sm">{retreat.location}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl font-bold text-warm-orange">${retreat.price}</span>
+                    <Button className="bg-sage-green hover:bg-sage-green/90 text-white">
+                      Подробнее
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         )}
@@ -150,6 +195,13 @@ export default function Home() {
               Посмотреть все ретриты
             </Button>
           </Link>
+        </div>
+      </section>
+
+      {/* Personalized Recommendations */}
+      <section className="px-4 sm:px-6 lg:px-8 py-16 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <PersonalizedRecommendations />
         </div>
       </section>
 

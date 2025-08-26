@@ -1,9 +1,26 @@
 import { Link } from "wouter";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { CalendarDays, MapPin, Users, Star, Heart, Award, Wifi, Coffee } from "lucide-react";
-import type { Retreat } from "@shared/schema";
+import { Card, CardContent } from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
+import { CalendarDays, MapPin, Users, Star, Heart, Award } from "lucide-react";
+import StarRating from "./StarRating";
+
+interface Retreat {
+  id: string;
+  title: string;
+  location: string;
+  price: number;
+  duration?: number;
+  startDate: string;
+  endDate?: string;
+  description: string;
+  imageUrl?: string;
+  rating?: number;
+  reviewCount?: number;
+  features?: string[];
+  maxParticipants?: number;
+  currentParticipants?: number;
+}
 
 interface RetreatCardProps {
   retreat: Retreat;
@@ -11,16 +28,16 @@ interface RetreatCardProps {
 
 export default function RetreatCard({ retreat }: RetreatCardProps) {
   const startDate = new Date(retreat.startDate);
-  const endDate = new Date(retreat.endDate);
-  const availableSpots = retreat.maxParticipants - retreat.currentParticipants;
-  const duration = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+  const endDate = retreat.endDate ? new Date(retreat.endDate) : new Date(startDate.getTime() + (retreat.duration || 7) * 24 * 60 * 60 * 1000);
+  const availableSpots = (retreat.maxParticipants ?? 20) - (retreat.currentParticipants ?? 0);
+  const duration = retreat.duration || Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
   
-  // Mock data for enhanced features (in real app, this would come from API)
-  const rating = 4.6 + Math.random() * 0.4; // 4.6-5.0
-  const reviewCount = Math.floor(Math.random() * 150) + 20; // 20-170 reviews
+  // Use actual data or fallback to mock data
+  const rating = retreat.rating || 4.6 + Math.random() * 0.4;
+  const reviewCount = retreat.reviewCount || Math.floor(Math.random() * 150) + 20;
   const isPopular = Math.random() > 0.7;
   const hasFreeCancellation = Math.random() > 0.5;
-  const features = ['Питание включено', 'Wi-Fi', 'Массаж', 'Экскурсии'].filter(() => Math.random() > 0.5);
+  const features = retreat.features || ['Питание включено', 'Wi-Fi', 'Массаж', 'Экскурсии'].filter(() => Math.random() > 0.5);
 
   return (
     <Card className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative">
@@ -53,10 +70,7 @@ export default function RetreatCard({ retreat }: RetreatCardProps) {
         <div className="flex justify-between items-start mb-3">
           <h3 className="text-xl font-semibold text-forest-green line-clamp-2">{retreat.title}</h3>
           <div className="flex flex-col items-end">
-            <div className="flex items-center text-warm-orange">
-              <Star className="w-4 h-4 mr-1 fill-current" />
-              <span className="text-sm font-semibold">{rating.toFixed(1)}</span>
-            </div>
+            <StarRating rating={rating} size="sm" />
             <span className="text-xs text-soft-gray">{reviewCount} отзывов</span>
           </div>
         </div>
@@ -98,7 +112,7 @@ export default function RetreatCard({ retreat }: RetreatCardProps) {
         <div className="flex justify-between items-center">
           <div>
             <div className="text-lg font-bold text-forest-green">
-              от €{parseFloat(retreat.price).toFixed(0)}
+              от €{parseFloat(retreat.price.toString()).toFixed(0)}
             </div>
             <div className="text-xs text-soft-gray">за день</div>
           </div>

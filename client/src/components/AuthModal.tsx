@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, X } from "lucide-react";
+import { useAuth } from "../App";
 
 interface AuthModalProps {
   open: boolean;
@@ -11,6 +12,7 @@ interface AuthModalProps {
 }
 
 export default function AuthModal({ open, onOpenChange, initialMode = 'login' }: AuthModalProps) {
+  const { login } = useAuth();
   const [isLogin, setIsLogin] = useState(initialMode === 'login');
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -44,8 +46,12 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login' }:
         body: JSON.stringify({ email: forgotEmail }),
       });
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || "Ошибка отправки запроса");
+        let data = null;
+        const contentType = res.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          data = await res.json();
+        }
+        throw new Error((data && data.message) || "Ошибка отправки запроса");
       }
       setForgotSent(true);
     } catch (err: any) {
@@ -56,29 +62,73 @@ export default function AuthModal({ open, onOpenChange, initialMode = 'login' }:
   };
 
   const handleSubmit = async () => {
-    // Если пользователь переключился в режим регистрации, отправляем на полноценную страницу
-    if (!isLogin) {
-      window.location.href = "/auth";
-      return;
-    }
-
     setSubmitLoading(true);
     setSubmitError("");
+    
     try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-        credentials: "include",
-      });
-      let data: any = null;
-      try { data = await res.json(); } catch {}
-      if (!res.ok) throw new Error((data && data.message) || "Ошибка входа");
-      onOpenChange(false);
-      // Обновляем страницу, чтобы подтянулось состояние авторизации
-      window.location.reload();
-    } catch (err: any) {
-      setSubmitError(err.message || "Ошибка входа");
+      if (isLogin) {
+        // Вход пользователя
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+          credentials: 'include'
+        });
+        
+        let data = null;
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          data = await response.json();
+        }
+        
+        if (!response.ok) {
+          throw new Error((data && data.message) || 'Ошибка входа');
+        }
+        
+        // Успешный вход - обновляем контекст
+        login(data.user);
+        onOpenChange(false);
+        
+        // Очищаем форму
+        setEmail("");
+        setPassword("");
+        
+      } else {
+        // Регистрация пользователя
+        const response = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            firstName: "Новый",
+            lastName: "Пользователь", 
+            email, 
+            password,
+            role: "user"
+          }),
+          credentials: 'include'
+        });
+        
+        let data = null;
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          data = await response.json();
+        }
+        
+        if (!response.ok) {
+          throw new Error((data && data.message) || 'Ошибка регистрации');
+        }
+        
+        // Успешная регистрация - обновляем контекст
+        login(data.user);
+        onOpenChange(false);
+        
+        // Очищаем форму
+        setEmail("");
+        setPassword("");
+      }
+      
+    } catch (error: any) {
+      setSubmitError(error.message || 'Произошла ошибка');
     } finally {
       setSubmitLoading(false);
     }

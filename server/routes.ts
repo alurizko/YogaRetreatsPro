@@ -8,6 +8,7 @@ import jwt from "jsonwebtoken";
 import { users } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { db } from "./db";
+import crypto from "crypto";
 import passport from "passport";
 import session from "express-session";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
@@ -696,6 +697,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Ошибка регистрации через Google:", error);
       res.status(500).json({ message: "Ошибка регистрации" });
+    }
+  });
+
+  // Регистрация партнера/организатора
+  app.post('/api/auth/register-partner', async (req, res) => {
+    try {
+      const { name, surname, email, phone, company, experience, password, role } = req.body;
+      
+      if (!name || !surname || !email || !password) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Имя, фамилия, email и пароль обязательны" 
+        });
+      }
+
+      // Нормализуем email
+      const normalizedEmail = String(email).trim().toLowerCase();
+      
+      // Проверяем, что email не занят
+      const existing = await db.select().from(users).where(eq(users.email, normalizedEmail));
+      if (existing.length > 0) {
+        return res.status(409).json({ 
+          success: false, 
+          message: "Пользователь с таким email уже зарегистрирован" 
+        });
+      }
+
+      // Генерация уникального id
+      const id = crypto.randomUUID();
+      
+      // Хеширование пароля
+      const password_hash = await bcrypt.hash(password, 10);
+      
+      // Создание пользователя-организатора
+      const [user] = await db.insert(users).values({
+        id,
+        firstName: name,
+        lastName: surname,
+        email: normalizedEmail,
+        role: "organizer", // Устанавливаем роль организатора
+        password_hash,
+      }).returning();
+
+      // Генерация JWT
+      const token = jwt.sign(
+        { id: user.id, email: user.email }, 
+        process.env.JWT_SECRET!, 
+        { expiresIn: "7d" }
+      );
+      
+      res.cookie('token', token, { httpOnly: true, sameSite: 'lax' });
+      
+      res.status(201).json({ 
+        success: true,
+        message: "Аккаунт партнера успешно создан",
+        user: { 
+          id: user.id, 
+          email: user.email, 
+          firstName: user.firstName, 
+          lastName: user.lastName,
+          role: user.role 
+        }
+      });
+    } catch (error) {
+      console.error("Partner registration error:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Ошибка при создании аккаунта партнера" 
+      });
     }
   });
 
