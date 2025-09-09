@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 20 14.3% 4.1%;
+  --muted: 60 4.8% 95.9%;
+  --muted-foreground: 25 5.3% 44.7%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 20 14.3% 4.1%;
+  --card: 0 0% 100%;
+  --card-foreground: 20 14.3% 4.1%;
+  --border: 20 5.9% 90%;
+  --input: 20 5.9% 90%;
+  --primary: 173 26% 27%; /* forest-green */
+  --primary-foreground: 0 0% 98%;
+  --secondary: 60 4.8% 95.9%;
+  --secondary-foreground: 24 9.8% 10%;
+  --accent: 103 39% 59%; /* sage-green */
+  --accent-foreground: 24 9.8% 10%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 60 9.1% 97.8%;
+  --ring: 20 14.3% 4.1%;
+  --radius: 0.5rem;
+  
+  /* Custom yoga theme colors */
+  --forest-green: 173 26% 27%;
+  --sage-green: 103 39% 59%;
+  --warm-orange: 25 66% 66%;
+  --soft-gray: 210 7% 56%;
+  --soft-white: 0 0% 99%;
+}
+
+.dark {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --primary: 173 26% 27%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+  --accent: 103 39% 59%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --ring: 240 4.9% 83.9%;
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-gray-200;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Open Sans', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer utilities {
+  .text-forest-green {
+    color: var(--forest-green);
+  }
+  
+  .bg-forest-green {
+    background-color: var(--forest-green);
+  }
+  
+  .text-sage-green {
+    color: var(--sage-green);
+  }
+  
+  .bg-sage-green {
+    background-color: var(--sage-green);
+  }
+  
+  .text-warm-orange {
+    color: var(--warm-orange);
+  }
+  
+  .bg-warm-orange {
+    background-color: var(--warm-orange);
+  }
+  
+  .text-soft-gray {
+    color: var(--soft-gray);
+  }
+  
+  .bg-soft-gray {
+    background-color: var(--soft-gray);
+  }
+  
+  .bg-soft-white {
+    background-color: var(--soft-white);
+  }
+}
