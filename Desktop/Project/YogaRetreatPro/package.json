@@ -1,46 +1,49 @@
 {
   "name": "yoga-retreat-pro",
   "version": "1.0.0",
+  "description": "Yoga Retreat Pro - Full Stack Application",
+  "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
-    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
-    "build": "npm run client:build && npm run server:build",
-    "start": "node dist/server.js",
-    "client:dev": "cd client && npm run dev",
-    "client:build": "cd client && npm run build",
-    "server:dev": "tsx watch server/index.ts",
-    "server:build": "esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
-    "db:push": "drizzle-kit push",
-    "db:migrate": "drizzle-kit migrate"
+    "dev": "concurrently --kill-others-on-fail --raw \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:client": "cd client && npm run dev",
+    "dev:server": "cross-env NODE_ENV=development tsx watch server/index.ts",
+    "install:all": "npm install && cd client && npm install && cd ../server && npm install",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "cd client && npm run build",
+    "build:server": "tsc server/index.ts --outDir dist",
+    "start": "npm run start:server",
+    "start:server": "cross-env NODE_ENV=production node dist/index.js",
+    "db:push": "cd server && npm run db:push",
+    "db:migrate": "cd server && npm run db:migrate",
+    "clean": "rimraf dist",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "npm run build:client && npm run build:server && npm run start:server"
   },
   "dependencies": {
-    "@radix-ui/react-slot": "^1.2.3",
-    "@types/bcryptjs": "^2.4.6",
-    "@types/cors": "^2.8.17",
-    "@types/express": "^4.17.21",
-    "@types/jsonwebtoken": "^9.0.6",
-    "@types/multer": "^1.4.11",
-    "@types/node": "^20.11.24",
-    "bcryptjs": "^2.4.3",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "drizzle-orm": "^0.29.4",
-    "express": "^4.18.3",
-    "jsonwebtoken": "^9.0.2",
-    "lucide-react": "^0.543.0",
-    "multer": "^1.4.5-lts.1",
-    "pg": "^8.11.3",
-    "tailwind-merge": "^3.3.1",
-    "zod": "^3.22.4"
+    "concurrently": "^8.2.2"
   },
   "devDependencies": {
-    "@types/pg": "^8.11.2",
-    "concurrently": "^8.2.2",
-    "drizzle-kit": "^0.20.14",
-    "esbuild": "^0.20.1",
+    "cross-env": "^7.0.3",
     "tsx": "^4.7.1",
-    "typescript": "^5.3.3"
-  }
+    "typescript": "^5.3.3",
+    "rimraf": "^5.0.5",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0"
+  },
+  "keywords": [
+    "yoga",
+    "retreat",
+    "api",
+    "express",
+    "typescript",
+    "react",
+    "vite"
+  ],
+  "author": "YogaRetreatPro Team",
+  "license": "MIT"
 }

@@ -2,11 +2,16 @@
   "name": "yoga-retreat-pro-client",
   "private": true,
   "version": "0.0.0",
+  "description": "Frontend for YogaRetreatPro platform",
   "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --port 5173 --strictPort",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview --port 5173 --strictPort",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.1.2",
@@ -22,15 +27,20 @@
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-tabs": "^1.0.4",
     "@radix-ui/react-toast": "^1.1.5",
+    "@supabase/supabase-js": "^2.57.4",
     "@tanstack/react-query": "^5.28.4",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "date-fns": "^3.6.0",
     "framer-motion": "^11.0.14",
+    "i18next": "^23.16.8",
+    "i18next-browser-languagedetector": "^7.2.2",
+    "i18next-http-backend": "^2.5.0",
     "lucide-react": "^0.363.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.51.1",
+    "react-i18next": "^14.1.3",
     "react-router-dom": "^6.22.3",
     "tailwind-merge": "^2.2.2",
     "tailwindcss-animate": "^1.0.7",
@@ -46,5 +56,17 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5.2.2",
     "vite": "^5.2.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
