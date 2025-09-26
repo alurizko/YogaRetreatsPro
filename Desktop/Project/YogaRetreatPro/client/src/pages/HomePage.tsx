@@ -5,6 +5,7 @@ import { Search, Star, MapPin, Calendar, Users, Heart, Gift, Shield, Clock, Awar
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import HeroVideo from '@/components/HeroVideo'
 import { fetchRetreats } from '@/lib/api'
 
 const HomePage = () => {
@@ -62,17 +63,13 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Hero Video Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <HeroVideo />
+      </div>
+
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Hero Title */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            {t('home.hero.title')}
-          </h1>
-          <p className="text-lg text-gray-600 mb-8">
-            {t('home.hero.subtitle')}
-          </p>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
 
         {/* Popular Searches */}
         <div className="mb-12">

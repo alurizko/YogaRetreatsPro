@@ -1,10 +1,11 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Menu, X, User, Heart, Plus, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/AuthContext'
 import { LanguageSwitcher } from './LanguageSwitcher'
+import HeroVideo from '@/components/HeroVideo'
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -12,6 +13,8 @@ const Header = () => {
   const { user, logout } = useAuth()
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const location = useLocation()
+  const isHome = location.pathname === '/'
 
   // Закрываем меню при изменении маршрута
   useEffect(() => {
@@ -389,6 +392,15 @@ const Header = () => {
           </div>
         )}
       </div>
+
+      {/* Hero video only on home page */}
+      {isHome && (
+        <div className="pt-0">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+            <HeroVideo />
+          </div>
+        </div>
+      )}
     </header>
   )
 }
