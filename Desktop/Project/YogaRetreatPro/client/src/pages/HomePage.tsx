@@ -5,12 +5,14 @@ import { Search, Star, MapPin, Calendar, Users, Heart, Gift, Shield, Clock, Awar
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import HeroVideo from '@/components/HeroVideo'
 import { fetchRetreats } from '@/lib/api'
+import { useAuth } from '@/contexts/AuthContext'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 
 const HomePage = () => {
   const navigate = useNavigate()
   const { t } = useTranslation()
+  const { user } = useAuth()
   const [searchDuration, setSearchDuration] = useState('')
   const [searchMonth, setSearchMonth] = useState('')
   const [featuredRetreats, setFeaturedRetreats] = useState([])
@@ -43,66 +45,58 @@ const HomePage = () => {
     navigate(`/retreats?${params.toString()}`)
   }
 
-  const popularDestinations = [
-    { name: "Spain", link: "/search?destination=spain" },
-    { name: "Indonesia", link: "/search?destination=indonesia" },
-    { name: "Bali", link: "/search?destination=bali" },
-    { name: "India", link: "/search?destination=india" },
-    { name: "Portugal", link: "/search?destination=portugal" },
-    { name: "France", link: "/search?destination=france" }
-  ]
-
-  const popularCategories = [
-    { name: "Yoga Meditation Retreats", link: "/search?category=yoga-meditation" },
-    { name: "Level: Beginner", link: "/search?level=beginner" },
-    { name: "Level: Intermediate", link: "/search?level=intermediate" },
-    { name: "Hatha Yoga", link: "/search?style=hatha" },
-    { name: "Vinyasa Yoga", link: "/search?style=vinyasa" },
-    { name: "Yin Yoga", link: "/search?style=yin" }
-  ]
+  // Popular sections replaced with direct actions per requirements
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Video Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        <HeroVideo />
-      </div>
-
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
 
-        {/* Popular Searches */}
+        {/* Popular Actions */}
         <div className="mb-12">
           <div className="bg-gray-50 rounded-lg p-6">
             <h3 className="text-lg font-semibold mb-4 text-gray-900">{t('home.popularSearches')}</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Destinations */}
+              {/* Retreats quick access */}
               <div>
-                <h4 className="font-medium text-gray-700 mb-3">{t('home.destinations')}</h4>
-                <div className="flex flex-wrap gap-2">
-                  {popularDestinations.map((destination, index) => (
-                    <Link key={index} to={destination.link}>
-                      <Button variant="outline" size="sm" className="text-sm">
-                        {destination.name}
-                      </Button>
-                    </Link>
-                  ))}
-                </div>
+                <h4 className="font-medium text-gray-700 mb-3">{t('home.sections.retreatsTitle')}</h4>
+                <Link to="/retreats">
+                  <Button variant="outline" size="sm" className="text-sm">
+                    {t('nav.retreats')}
+                  </Button>
+                </Link>
               </div>
 
-              {/* Categories */}
+              {/* Wishlist or Login dropdown */}
               <div>
-                <h4 className="font-medium text-gray-700 mb-3">{t('home.categories')}</h4>
-                <div className="flex flex-wrap gap-2">
-                  {popularCategories.map((category, index) => (
-                    <Link key={index} to={category.link}>
+                <h4 className="font-medium text-gray-700 mb-3">{t('home.sections.wishlistTitle')}</h4>
+                {user ? (
+                  <Link to="/wishlist">
+                    <Button variant="outline" size="sm" className="text-sm">
+                      {t('nav.wishlist')}
+                    </Button>
+                  </Link>
+                ) : (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
                       <Button variant="outline" size="sm" className="text-sm">
-                        {category.name}
+                        {t('nav.login')}
                       </Button>
-                    </Link>
-                  ))}
-                </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuItem asChild>
+                        <Link to="/login">{t('nav.login')}</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/register">{t('nav.createAccount')}</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/wishlist">{t('nav.wishlist')}</Link>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
             </div>
           </div>
@@ -118,7 +112,7 @@ const HomePage = () => {
                 </label>
                 <Select value={searchDuration} onValueChange={setSearchDuration}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Duration" />
+                    <SelectValue placeholder={t('home.placeholders.duration')} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="2-days">2 days</SelectItem>
@@ -135,7 +129,7 @@ const HomePage = () => {
                 </label>
                 <Select value={searchMonth} onValueChange={setSearchMonth}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select month" />
+                    <SelectValue placeholder={t('home.placeholders.month')} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="2025-09">2025 September</SelectItem>
@@ -262,13 +256,12 @@ const HomePage = () => {
         <div className="mb-12">
           <Card className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0">
             <CardContent className="p-8 text-center">
-              <h2 className="text-2xl font-bold mb-4">Gift Card: Great for all Occasions</h2>
+              <h2 className="text-2xl font-bold mb-4">{t('home.gift.title')}</h2>
               <p className="text-lg mb-6 opacity-90">
-                A Tripaneer gift card is the perfect present for anyone interested in wellness, culture, and adventure. 
-                For any journey, near or far, choose between 17,500 experiences worldwide.
+                {t('home.gift.desc')}
               </p>
               <Button variant="secondary" size="lg" className="text-purple-600">
-                Buy a gift card
+                {t('home.gift.cta')}
               </Button>
             </CardContent>
           </Card>
@@ -279,35 +272,33 @@ const HomePage = () => {
           <Card className="border-0 shadow-sm">
             <CardContent className="p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-                Travelers love us, and the feeling is mutual
+                {t('home.trust.title')}
               </h2>
               <p className="text-center text-gray-600 mb-8">
-                Over 260k travelers like you have chosen Tripaneer so far. Hear what they have to say about us!
+                {t('home.trust.subtitle')}
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
                 <div>
                   <div className="text-3xl font-bold text-orange-500 mb-2">300,000+</div>
-                  <div className="text-gray-600">trips enjoyed through Tripaneer</div>
+                  <div className="text-gray-600">{t('home.trust.trips')}</div>
                 </div>
                 <div>
                   <div className="text-3xl font-bold text-orange-500 mb-2">93%</div>
-                  <div className="text-gray-600">of our customers recommend booking with us</div>
+                  <div className="text-gray-600">{t('home.trust.recommend')}</div>
                 </div>
                 <div>
                   <div className="text-3xl font-bold text-orange-500 mb-2">84,000+</div>
-                  <div className="text-gray-600">verified reviews<br/>4.6 star average organizer score</div>
+                  <div className="text-gray-600">{t('home.trust.reviews')}<br/>{t('home.trust.score')}</div>
                 </div>
               </div>
               
               <div className="mt-8 text-center text-gray-600">
                 <p>
-                  We're the world's leading marketplace to explore and book unforgettable travel experiences. 
-                  We offer any type of holiday you can imagine including mindful yoga retreats, adventurous safaris, epic surf camps, and more.
+                  {t('footer.company1')}
                 </p>
                 <p className="mt-4">
-                  We love to travel and we want to share our excitement with you. We're passionate about connecting you 
-                  with local organizers to enrich your life with unforgettable trips.
+                  {t('footer.company2')}
                 </p>
               </div>
             </CardContent>

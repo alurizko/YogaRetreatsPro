@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next'
-import { Button } from '@/components/ui/button'
 
 // Простой видео-герой, похожий на BookYogaRetreats: фоновое видео, затемнение и CTA
 export default function HeroVideo() {
@@ -29,9 +28,7 @@ export default function HeroVideo() {
           <p className="text-white/90 text-lg md:text-xl mb-6">
             {t('home.hero.subtitle')}
           </p>
-          <Button size="lg" className="bg-orange-500 hover:bg-orange-600">
-            {t('home.search')}
-          </Button>
+          {/* CTA intentionally removed per request */}
         </div>
       </div>
     </section>

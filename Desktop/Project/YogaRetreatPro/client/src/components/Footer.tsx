@@ -1,64 +1,66 @@
 import { Link } from 'react-router-dom'
 import { Facebook, Instagram, Youtube, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useTranslation } from 'react-i18next'
 
 const Footer = () => {
+  const { t } = useTranslation()
   return (
     <footer className="bg-gray-50 text-gray-700 border-t">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Tripaneer Section */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-gray-900">Tripaneer</h3>
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">{t('footer.tripaneer')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/customer-service" className="text-gray-600 hover:text-orange-500 transition-colors">
-                  Contact Us
+                  {t('footer.contactUs')}
                 </Link>
               </li>
               <li>
                 <Link to="/about" className="text-gray-600 hover:text-orange-500 transition-colors">
-                  About us
+                  {t('footer.aboutUs')}
                 </Link>
               </li>
               <li>
                 <Link to="/gift-cards" className="text-gray-600 hover:text-orange-500 transition-colors">
-                  Gift cards
+                  {t('footer.giftCards')}
                 </Link>
               </li>
               <li>
                 <Link to="/group-travel" className="text-gray-600 hover:text-orange-500 transition-colors">
-                  Group travel
+                  {t('footer.groupTravel')}
                 </Link>
               </li>
               <li>
                 <Link to="/partners" className="text-gray-600 hover:text-orange-500 transition-colors">
-                  Become a Partner
+                  {t('footer.becomePartner')}
                 </Link>
               </li>
               <li>
                 <Link to="/affiliates" className="text-gray-600 hover:text-orange-500 transition-colors">
-                  Join the Affiliate Program
+                  {t('footer.affiliateProgram')}
                 </Link>
               </li>
               <li>
                 <Link to="/site-map" className="text-gray-600 hover:text-orange-500 transition-colors">
-                  Site Map
+                  {t('footer.siteMap')}
                 </Link>
               </li>
               <li>
                 <a href="https://tripaneer.recruitee.com/" className="text-gray-600 hover:text-orange-500 transition-colors">
-                  Careers
+                  {t('footer.careers')}
                 </a>
               </li>
               <li>
                 <Link to="/customer-service" className="text-gray-600 hover:text-orange-500 transition-colors">
-                  Customer Care
+                  {t('footer.customerCare')}
                 </Link>
               </li>
               <li>
                 <Link to="/terms-and-privacy" className="text-gray-600 hover:text-orange-500 transition-colors">
-                  Terms and Privacy
+                  {t('footer.termsPrivacy')}
                 </Link>
               </li>
             </ul>
@@ -66,7 +68,7 @@ const Footer = () => {
 
           {/* Our Other Themes */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 text-gray-900">Our Other Themes</h3>
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">{t('footer.otherThemes')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <a href="https://www.tripaneer.com" className="text-gray-600 hover:text-orange-500 transition-colors">
@@ -100,33 +102,33 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4 text-gray-900">
               <Link to="/news" className="hover:text-orange-500 transition-colors">
-                Recent Blog Articles
+                {t('footer.recentArticles')}
               </Link>
             </h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/news/yoga-retreats-nature" className="text-gray-600 hover:text-orange-500 transition-colors">
-                  Why Should You Go on a Yoga Retreat in Nature?
+                  {t('footer.article1')}
                 </Link>
               </li>
               <li>
                 <Link to="/news/international-yoga-day-2025" className="text-gray-600 hover:text-orange-500 transition-colors">
-                  2025 International Yoga Day
+                  {t('footer.article2')}
                 </Link>
               </li>
               <li>
                 <Link to="/news/yoga-retreat-experience" className="text-gray-600 hover:text-orange-500 transition-colors">
-                  My Bali Yoga Retreat Experience
+                  {t('footer.article3')}
                 </Link>
               </li>
               <li>
                 <Link to="/news/affordable-yoga-retreats" className="text-gray-600 hover:text-orange-500 transition-colors">
-                  Top 20 Affordable Yoga Retreats [2025]
+                  {t('footer.article4')}
                 </Link>
               </li>
               <li>
                 <Link to="/news/yoga-surf-retreats" className="text-gray-600 hover:text-orange-500 transition-colors">
-                  All About Yoga & Surf Retreats
+                  {t('footer.article5')}
                 </Link>
               </li>
             </ul>
@@ -135,12 +137,10 @@ const Footer = () => {
           {/* Company Description */}
           <div>
             <p className="text-sm text-gray-600 mb-4">
-              We're the world's leading marketplace to explore and book unforgettable travel experiences. 
-              We offer any type of holiday you can imagine including mindful yoga retreats, adventurous safaris, epic surf camps, and more.
+              {t('footer.company1')}
             </p>
             <p className="text-sm text-gray-600 mb-6">
-              We love to travel and we want to share our excitement with you. We're passionate about connecting you 
-              with local organizers to enrich your life with unforgettable trips.
+              {t('footer.company2')}
             </p>
             
             {/* Social Media */}
@@ -166,7 +166,7 @@ const Footer = () => {
         <div className="border-t border-gray-200 mt-8 pt-8">
           <div className="text-center">
             <p className="text-gray-500 text-sm">
-              Copyright © 2025 Tripaneer. All rights reserved.
+              {t('footer.copyright')}
             </p>
           </div>
         </div>

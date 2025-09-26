@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
+import { useTranslation } from 'react-i18next'
 
 export default function RegisterPage() {  // <-- Добавлен export default
   const [formData, setFormData] = useState({
@@ -19,6 +20,7 @@ export default function RegisterPage() {  // <-- Добавлен export default
   const { register } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -33,8 +35,8 @@ export default function RegisterPage() {  // <-- Добавлен export default
     if (formData.password !== formData.confirmPassword) {
       toast({
         variant: 'destructive',
-        title: 'Password mismatch',
-        description: 'Passwords do not match. Please try again.',
+        title: t('auth.passwordMismatchTitle'),
+        description: t('auth.passwordMismatchDesc'),
       })
       return
     }
@@ -61,8 +63,8 @@ export default function RegisterPage() {  // <-- Добавлен export default
     } catch (error) {
       toast({
         variant: 'destructive',
-        title: 'Registration failed',
-        description: error instanceof Error ? error.message : 'Please try again.',
+        title: t('auth.registerFailedTitle'),
+        description: error instanceof Error ? error.message : t('auth.registerFailedDesc'),
       })
     } finally {
       setIsLoading(false)
@@ -75,17 +77,17 @@ export default function RegisterPage() {  // <-- Добавлен export default
         <Card className="max-w-md w-full">
           <CardContent className="p-6">
             <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Check Your Email</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('auth.checkEmailTitle')}</h2>
               <p className="text-gray-600 mb-6">
-                We've sent a confirmation email to {formData.email}. Please click the link in the email to verify your account.
+                {t('auth.checkEmailDesc', { email: formData.email })}
               </p>
               <p className="text-sm text-gray-500 mb-4">
-                You will be redirected to the login page in 5 seconds...
+                {t('auth.redirectLoginSeconds', { count: 5 })}
               </p>
               <div className="mt-4">
                 <Link to="/login">
                   <Button variant="outline" className="w-full">
-                    Go to Login
+                    {t('auth.goToLogin')}
                   </Button>
                 </Link>
               </div>
@@ -101,9 +103,9 @@ export default function RegisterPage() {  // <-- Добавлен export default
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <Card className="max-w-md w-full">
         <CardHeader>
-          <CardTitle>Sign Up</CardTitle>
+          <CardTitle>{t('auth.signupTitle')}</CardTitle>
           <CardDescription>
-            Create a new account to get started.
+            {t('auth.signupSubtitle')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -111,7 +113,7 @@ export default function RegisterPage() {  // <-- Добавлен export default
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
-                  First Name
+                  {t('auth.firstName')}
                 </label>
                 <Input
                   id="firstName"
@@ -124,7 +126,7 @@ export default function RegisterPage() {  // <-- Добавлен export default
               </div>
               <div>
                 <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
-                  Last Name
+                  {t('auth.lastName')}
                 </label>
                 <Input
                   id="lastName"
@@ -138,7 +140,7 @@ export default function RegisterPage() {  // <-- Добавлен export default
             </div>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
+                {t('auth.emailLabel')}
               </label>
               <Input
                 id="email"
@@ -151,7 +153,7 @@ export default function RegisterPage() {  // <-- Добавлен export default
             </div>
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
+                {t('auth.passwordLabel')}
               </label>
               <Input
                 id="password"
@@ -164,7 +166,7 @@ export default function RegisterPage() {  // <-- Добавлен export default
             </div>
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Confirm Password
+                {t('auth.confirmPassword')}
               </label>
               <Input
                 id="confirmPassword"
@@ -180,14 +182,14 @@ export default function RegisterPage() {  // <-- Добавлен export default
               className="w-full"
               disabled={isLoading}
             >
-              {isLoading ? 'Signing up...' : 'Sign Up'}
+              {isLoading ? t('auth.signingUp') : t('auth.signUp')}
             </Button>
           </form>
           <div className="mt-4 text-center">
             <p className="text-sm text-gray-600">
-              Already have an account?{' '}
+              {t('auth.alreadyHave')}{' '}
               <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-                Sign in
+                {t('auth.signIn')}
               </Link>
             </p>
           </div>

@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
+import { useTranslation } from 'react-i18next'
 
 const LoginPage = () => {
   const [email, setEmail] = useState('')
@@ -13,6 +14,7 @@ const LoginPage = () => {
   const { login } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -21,15 +23,15 @@ const LoginPage = () => {
     try {
       await login(email, password)
       toast({
-        title: 'Welcome back!',
-        description: 'You have successfully logged in.',
+        title: t('auth.loginSuccessTitle'),
+        description: t('auth.loginSuccessDesc'),
       })
       navigate('/')
     } catch (error) {
       toast({
         variant: 'destructive',
-        title: 'Login failed',
-        description: error instanceof Error ? error.message : 'Please check your credentials and try again.',
+        title: t('auth.loginFailedTitle'),
+        description: error instanceof Error ? error.message : t('auth.loginFailedDesc'),
       })
     } finally {
       setIsLoading(false)
@@ -41,43 +43,43 @@ const LoginPage = () => {
       <div className="max-w-md w-full">
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
+            <CardTitle className="text-2xl font-bold">{t('auth.signinTitle')}</CardTitle>
             <CardDescription>
-              Sign in to your YogaRetreatPro account
+              {t('auth.signinSubtitle')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Address
+                  {t('auth.emailLabel')}
                 </label>
                 <Input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
+                  placeholder={t('auth.emailPlaceholder')}
                   required
                 />
               </div>
               
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                  Password
+                  {t('auth.passwordLabel')}
                 </label>
                 <Input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
+                  placeholder={t('auth.passwordPlaceholder')}
                   required
                 />
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Signing In...' : 'Sign In'}
+                {isLoading ? t('auth.signingIn') : t('auth.signIn')}
               </Button>
             </form>
 
@@ -87,14 +89,14 @@ const LoginPage = () => {
                   <div className="w-full border-t border-gray-300" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">Don't have an account?</span>
+                  <span className="px-2 bg-white text-gray-500">{t('auth.noAccount')}</span>
                 </div>
               </div>
               
               <div className="mt-4">
                 <Link to="/register">
                   <Button variant="outline" className="w-full">
-                    Create Account
+                    {t('auth.createAccount')}
                   </Button>
                 </Link>
               </div>

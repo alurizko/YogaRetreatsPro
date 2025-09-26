@@ -3,6 +3,7 @@ import { useState, useEffect, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Menu, X, User, Heart, Plus, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { useAuth } from '@/contexts/AuthContext'
 import { LanguageSwitcher } from './LanguageSwitcher'
 import HeroVideo from '@/components/HeroVideo'
@@ -82,113 +83,9 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            {/* Destinations Dropdown */}
-            <div className="relative">
-              <button 
-                className="text-gray-700 hover:text-orange-500 transition-colors flex items-center"
-                onMouseEnter={() => setActiveDropdown('destinations')}
-                onMouseLeave={() => setActiveDropdown(null)}
-              >
-                {t('nav.destinations')}
-                <ChevronDown className="w-4 h-4 ml-1" />
-              </button>
-              {activeDropdown === 'destinations' && (
-                <div 
-                  className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg border z-50"
-                  onMouseEnter={() => setActiveDropdown('destinations')}
-                  onMouseLeave={() => setActiveDropdown(null)}
-                >
-                  <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-3">Popular Destinations</h3>
-                    <div className="space-y-2">
-                      {destinations.map((destination) => (
-                        <Link
-                          key={destination.name}
-                          to={`/retreats?destination=${encodeURIComponent(destination.name)}`}
-                          className="flex justify-between items-center py-2 px-3 rounded hover:bg-gray-50 transition-colors"
-                          onClick={closeAllDropdowns}
-                        >
-                          <span className="text-gray-700">{destination.name}</span>
-                          <span className="text-sm text-gray-500">({destination.count})</span>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Type of Retreat Dropdown */}
-            <div className="relative">
-              <button 
-                className="text-gray-700 hover:text-orange-500 transition-colors flex items-center"
-                onMouseEnter={() => setActiveDropdown('retreatTypes')}
-                onMouseLeave={() => setActiveDropdown(null)}
-              >
-                {t('nav.typeOfRetreat')}
-                <ChevronDown className="w-4 h-4 ml-1" />
-              </button>
-              {activeDropdown === 'retreatTypes' && (
-                <div 
-                  className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg border z-50"
-                  onMouseEnter={() => setActiveDropdown('retreatTypes')}
-                  onMouseLeave={() => setActiveDropdown(null)}
-                >
-                  <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-3">Retreat Types</h3>
-                    <div className="space-y-2">
-                      {retreatTypes.map((type) => (
-                        <Link
-                          key={type.name}
-                          to={`/retreats?type=${encodeURIComponent(type.name)}`}
-                          className="flex justify-between items-center py-2 px-3 rounded hover:bg-gray-50 transition-colors"
-                          onClick={closeAllDropdowns}
-                        >
-                          <span className="text-gray-700">{type.name}</span>
-                          <span className="text-sm text-gray-500">({type.count})</span>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Yoga Styles Dropdown */}
-            <div className="relative">
-              <button 
-                className="text-gray-700 hover:text-orange-500 transition-colors flex items-center"
-                onMouseEnter={() => setActiveDropdown('yogaStyles')}
-                onMouseLeave={() => setActiveDropdown(null)}
-              >
-                {t('nav.yogaStyles')}
-                <ChevronDown className="w-4 h-4 ml-1" />
-              </button>
-              {activeDropdown === 'yogaStyles' && (
-                <div 
-                  className="absolute top-full left-0 mt-1 w-64 bg-white rounded-lg shadow-lg border z-50"
-                  onMouseEnter={() => setActiveDropdown('yogaStyles')}
-                  onMouseLeave={() => setActiveDropdown(null)}
-                >
-                  <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-3">Yoga Styles</h3>
-                    <div className="space-y-2">
-                      {yogaStyles.map((style) => (
-                        <Link
-                          key={style.name}
-                          to={`/retreats?style=${encodeURIComponent(style.name)}`}
-                          className="flex justify-between items-center py-2 px-3 rounded hover:bg-gray-50 transition-colors"
-                          onClick={closeAllDropdowns}
-                        >
-                          <span className="text-gray-700">{style.name}</span>
-                          <span className="text-sm text-gray-500">({style.count})</span>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+            <Link to="/retreats" className="text-gray-700 hover:text-orange-500 transition-colors flex items-center">
+              {t('nav.retreats')}
+            </Link>
           </nav>
 
           {/* Right side - Currency and Auth */}
@@ -218,18 +115,24 @@ const Header = () => {
                 </Button>
               </>
             ) : (
-              <>
-                <Link to="/login">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="text-gray-700 hover:text-orange-500">
                     {t('nav.login')}
                   </Button>
-                </Link>
-                <Link to="/register">
-                  <Button size="sm" className="bg-orange-500 hover:bg-orange-600 text-white">
-                    {t('nav.createAccount')}
-                  </Button>
-                </Link>
-              </>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem asChild>
+                    <Link to="/login">{t('nav.login')}</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/register">{t('nav.createAccount')}</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/wishlist">{t('nav.wishlist')}</Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
 
@@ -245,112 +148,17 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
+          {/* Mobile Navigation */}
+          {isMenuOpen && (
           <div className="md:hidden py-4 border-t">
             <div className="flex flex-col space-y-4">
-              {/* Destinations Dropdown Mobile */}
-              <div className="relative">
-                <button 
-                  className="w-full text-left text-gray-700 hover:text-orange-500 transition-colors flex justify-between items-center"
-                  onClick={() => toggleDropdown('destinations')}
-                >
-                  <span>{t('nav.destinations')}</span>
-                  <ChevronDown className={`w-4 h-4 transform transition-transform ${activeDropdown === 'destinations' ? 'rotate-180' : ''}`} />
-                </button>
-                {activeDropdown === 'destinations' && (
-                  <div className="mt-1 w-full bg-white rounded-lg shadow-lg border">
-                    <div className="p-4">
-                      <h3 className="font-semibold text-gray-900 mb-3">Popular Destinations</h3>
-                      <div className="space-y-2">
-                        {destinations.map((destination) => (
-                          <Link
-                            key={destination.name}
-                            to={`/retreats?destination=${encodeURIComponent(destination.name)}`}
-                            className="flex justify-between items-center py-2 px-3 rounded hover:bg-gray-50 transition-colors"
-                            onClick={() => {
-                              closeAllDropdowns()
-                              setIsMenuOpen(false)
-                            }}
-                          >
-                            <span className="text-gray-700">{destination.name}</span>
-                            <span className="text-sm text-gray-500">({destination.count})</span>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Type of Retreat Dropdown Mobile */}
-              <div className="relative">
-                <button 
-                  className="w-full text-left text-gray-700 hover:text-orange-500 transition-colors flex justify-between items-center"
-                  onClick={() => toggleDropdown('retreatTypes')}
-                >
-                  <span>{t('nav.typeOfRetreat')}</span>
-                  <ChevronDown className={`w-4 h-4 transform transition-transform ${activeDropdown === 'retreatTypes' ? 'rotate-180' : ''}`} />
-                </button>
-                {activeDropdown === 'retreatTypes' && (
-                  <div className="mt-1 w-full bg-white rounded-lg shadow-lg border">
-                    <div className="p-4">
-                      <h3 className="font-semibold text-gray-900 mb-3">Retreat Types</h3>
-                      <div className="space-y-2">
-                        {retreatTypes.map((type) => (
-                          <Link
-                            key={type.name}
-                            to={`/retreats?type=${encodeURIComponent(type.name)}`}
-                            className="flex justify-between items-center py-2 px-3 rounded hover:bg-gray-50 transition-colors"
-                            onClick={() => {
-                              closeAllDropdowns()
-                              setIsMenuOpen(false)
-                            }}
-                          >
-                            <span className="text-gray-700">{type.name}</span>
-                            <span className="text-sm text-gray-500">({type.count})</span>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Yoga Styles Dropdown Mobile */}
-              <div className="relative">
-                <button 
-                  className="w-full text-left text-gray-700 hover:text-orange-500 transition-colors flex justify-between items-center"
-                  onClick={() => toggleDropdown('yogaStyles')}
-                >
-                  <span>{t('nav.yogaStyles')}</span>
-                  <ChevronDown className={`w-4 h-4 transform transition-transform ${activeDropdown === 'yogaStyles' ? 'rotate-180' : ''}`} />
-                </button>
-                {activeDropdown === 'yogaStyles' && (
-                  <div className="mt-1 w-full bg-white rounded-lg shadow-lg border">
-                    <div className="p-4">
-                      <h3 className="font-semibold text-gray-900 mb-3">Yoga Styles</h3>
-                      <div className="space-y-2">
-                        {yogaStyles.map((style) => (
-                          <Link
-                            key={style.name}
-                            to={`/retreats?style=${encodeURIComponent(style.name)}`}
-                            className="flex justify-between items-center py-2 px-3 rounded hover:bg-gray-50 transition-colors"
-                            onClick={() => {
-                              closeAllDropdowns()
-                              setIsMenuOpen(false)
-                            }}
-                          >
-                            <span className="text-gray-700">{style.name}</span>
-                            <span className="text-sm text-gray-500">({style.count})</span>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-              
+              <Link
+                to="/retreats"
+                className="text-gray-700 hover:text-orange-500 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {t('nav.retreats')}
+              </Link>
               {user ? (
                 <>
                   <Link

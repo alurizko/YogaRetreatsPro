@@ -1,27 +1,24 @@
 import { useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, Link } from 'react-router-dom'
 import { Search, Filter, MapPin, Calendar, Users, Star, Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { fetchRetreats } from '@/lib/api'
 
-interface Retreat {
-  id: number
+// Shape from DB (retreats table); simplify typing for now
+interface RetreatRow {
+  id: string
   title: string
-  location: string
-  price: number
-  duration: number
-  image: string
-  rating: number
-  reviews: number
-  interested: number
-  features: string[]
-  type?: string
-  style?: string
+  location?: string | null
+  price_from?: number | null
+  duration_days?: number | null
+  images?: string[] | null
+  retreat_instructors?: Array<{ instructor?: { id: string, first_name?: string | null, last_name?: string | null, photo_url?: string | null } | null }>
 }
 
 const RetreatsPage = () => {
   const [searchParams] = useSearchParams()
-  const [retreats, setRetreats] = useState<Retreat[]>([])
-  const [filteredRetreats, setFilteredRetreats] = useState<Retreat[]>([])
+  const [retreats, setRetreats] = useState<RetreatRow[]>([])
+  const [filteredRetreats, setFilteredRetreats] = useState<RetreatRow[]>([])
   const [loading, setLoading] = useState(true)
 
   // Get filter parameters from URL
@@ -29,100 +26,17 @@ const RetreatsPage = () => {
   const type = searchParams.get('type')
   const style = searchParams.get('style')
 
-  // Mock data - in real app this would come from API
-  const allRetreats: Retreat[] = [
-    {
-      id: 1,
-      title: "8 Day Spirit Awakening with Ayahuasca and Cacao in Puerto Viejo de Talamanca",
-      location: "Costa Rica",
-      price: 3350,
-      duration: 8,
-      image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=300&fit=crop",
-      rating: 4.9,
-      reviews: 23,
-      interested: 12,
-      features: ["Airport transfer available", "All meals included", "Instructed in English"],
-      type: "Spiritual Retreat",
-      style: "Meditation"
-    },
-    {
-      id: 2,
-      title: "5 Day Yoga Retreat in Tulum Caribbean Beach, Discovering the Magical Sacred Mayan Cenotes in Mexico",
-      location: "Mexico",
-      price: 2240,
-      duration: 5,
-      image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop",
-      rating: 4.9,
-      reviews: 23,
-      interested: 5,
-      features: ["Airport transfer available", "All meals included", "Instructed in English"],
-      type: "Yoga Retreat",
-      style: "Vinyasa Flow"
-    },
-    {
-      id: 3,
-      title: "4 Day Revive and Thrive: Serene Caribbean Healing Haven in Samana, Dominican Republic",
-      location: "Dominican Republic",
-      price: 1100,
-      duration: 4,
-      image: "https://images.unsplash.com/photo-1545389336-cf090694435e?w=400&h=300&fit=crop",
-      rating: 4.9,
-      reviews: 44,
-      interested: 6,
-      features: ["Airport transfer available", "All meals included", "Vegetarian friendly", "Instructed in English"],
-      type: "Wellness Retreat",
-      style: "Restorative Yoga"
-    },
-    {
-      id: 4,
-      title: "7 Day Hatha Yoga and Meditation Retreat in Rishikesh, India",
-      location: "India",
-      price: 899,
-      duration: 7,
-      image: "https://images.unsplash.com/photo-1545389336-cf090694435e?w=400&h=300&fit=crop",
-      rating: 4.8,
-      reviews: 156,
-      interested: 23,
-      features: ["All meals included", "Vegetarian friendly", "Instructed in English", "Yoga certification"],
-      type: "Yoga Retreat",
-      style: "Hatha Yoga"
-    },
-    {
-      id: 5,
-      title: "10 Day Vinyasa Flow Retreat in Ubud, Bali with Sacred Temples Tour",
-      location: "Indonesia",
-      price: 1850,
-      duration: 10,
-      image: "https://images.unsplash.com/photo-1537953773345-d172ccf13cf1?w=400&h=300&fit=crop",
-      rating: 4.9,
-      reviews: 89,
-      interested: 18,
-      features: ["Airport transfer available", "All meals included", "Cultural activities", "Instructed in English"],
-      type: "Yoga Retreat",
-      style: "Vinyasa Flow"
-    },
-    {
-      id: 6,
-      title: "6 Day Detox and Wellness Retreat in Algarve, Portugal",
-      location: "Portugal",
-      price: 1450,
-      duration: 6,
-      image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop",
-      rating: 4.7,
-      reviews: 67,
-      interested: 14,
-      features: ["Spa treatments included", "All meals included", "Organic food", "Instructed in English"],
-      type: "Detox Retreat",
-      style: "Yin Yoga"
-    }
-  ]
-
+  // Load real data from Supabase
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setRetreats(allRetreats)
+    async function load() {
+      setLoading(true)
+      const { data, error } = await fetchRetreats({})
+      if (!error) {
+        setRetreats(data as unknown as RetreatRow[])
+      }
       setLoading(false)
-    }, 500)
+    }
+    load()
   }, [])
 
   useEffect(() => {
@@ -130,19 +44,7 @@ const RetreatsPage = () => {
 
     if (destination) {
       filtered = filtered.filter(retreat => 
-        retreat.location.toLowerCase().includes(destination.toLowerCase())
-      )
-    }
-
-    if (type) {
-      filtered = filtered.filter(retreat => 
-        retreat.type?.toLowerCase().includes(type.toLowerCase())
-      )
-    }
-
-    if (style) {
-      filtered = filtered.filter(retreat => 
-        retreat.style?.toLowerCase().includes(style.toLowerCase())
+        (retreat.location || '').toLowerCase().includes(destination.toLowerCase())
       )
     }
 
@@ -223,61 +125,71 @@ const RetreatsPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredRetreats.map((retreat) => (
             <div key={retreat.id} className="bg-white rounded-lg shadow-sm border overflow-hidden hover:shadow-md transition-shadow">
-              <div className="relative">
-                <img
-                  src={retreat.image}
-                  alt={retreat.title}
-                  className="w-full h-48 object-cover"
-                />
-                <button className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-sm hover:bg-gray-50">
-                  <Heart className="h-4 w-4 text-gray-600" />
-                </button>
-              </div>
+              <Link to={`/retreats/${retreat.id}`} className="block">
+                <div className="relative">
+                  <img
+                    src={retreat.images?.[0] || 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=300&fit=crop'}
+                    alt={retreat.title}
+                    className="w-full h-48 object-cover"
+                  />
+                  <button className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-sm hover:bg-gray-50">
+                    <Heart className="h-4 w-4 text-gray-600" />
+                  </button>
+                </div>
+              </Link>
               
               <div className="p-4">
                 <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
                   <MapPin className="h-4 w-4" />
-                  {retreat.location}
+                  {retreat.location || ''}
                 </div>
                 
-                <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
-                  {retreat.title}
-                </h3>
+                <Link to={`/retreats/${retreat.id}`} className="hover:text-orange-600">
+                  <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                    {retreat.title}
+                  </h3>
+                </Link>
+
+                {/* Instructor pill */}
+                {retreat.retreat_instructors && retreat.retreat_instructors[0]?.instructor && (
+                  <div className="flex items-center gap-2 mb-3">
+                    <img
+                      src={retreat.retreat_instructors[0].instructor!.photo_url || 'https://images.unsplash.com/photo-1547425260-76bcadfb4f2d?w=80&h=80&fit=crop'}
+                      alt="instructor"
+                      className="w-6 h-6 rounded-full object-cover"
+                    />
+                    <span className="text-sm text-gray-700">
+                      {[retreat.retreat_instructors[0].instructor!.first_name, retreat.retreat_instructors[0].instructor!.last_name].filter(Boolean).join(' ')}
+                    </span>
+                  </div>
+                )}
                 
                 <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
-                    {retreat.duration} days
+                    {(retreat.duration_days || 0)} days
                   </div>
                   <div className="flex items-center gap-1">
                     <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    {retreat.rating} ({retreat.reviews})
+                    4.9 (23)
                   </div>
                 </div>
                 
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {retreat.features.slice(0, 2).map((feature, index) => (
-                    <span
-                      key={index}
-                      className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded"
-                    >
-                      {feature}
-                    </span>
-                  ))}
-                </div>
+                {/* Optional feature tags could be rendered here when available */}
+                <div className="mb-3" />
                 
                 <div className="flex justify-between items-center">
                   <div>
                     <span className="text-2xl font-bold text-gray-900">
-                      ${retreat.price}
+                      ${retreat.price_from || 0}
                     </span>
                     <span className="text-sm text-gray-600 ml-1">
-                      / {retreat.duration} days
+                      / {(retreat.duration_days || 0)} days
                     </span>
                   </div>
                   <div className="flex items-center gap-1 text-sm text-gray-600">
                     <Users className="h-4 w-4" />
-                    {retreat.interested} interested
+                    12 interested
                   </div>
                 </div>
               </div>

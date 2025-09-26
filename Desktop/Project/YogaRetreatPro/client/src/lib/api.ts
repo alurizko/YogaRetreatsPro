@@ -8,12 +8,39 @@ export type FetchRetreatsParams = {
   countryId?: string
 }
 
+export async function fetchRetreatById(id: string) {
+  try {
+    // Load retreat with related instructors and reviews via foreign tables
+    // Adjust relation names if your schema differs
+    const { data, error } = await supabase
+      .from('retreats')
+      .select(`
+        *,
+        retreat_instructors:retreat_instructors!retreat_instructors_retreat_id_fkey (
+          instructor:instructors (* )
+        ),
+        reviews:reviews(* )
+      `)
+      .eq('id', id)
+      .single()
+
+    return { data, error }
+  } catch (error: any) {
+    return { data: null, error }
+  }
+}
+
 export async function fetchRetreats(params: FetchRetreatsParams = {}) {
   try {
     let query = supabase
       .from('retreats')
-      .select('*')
-      .eq('status', 'published')
+      .select(`
+        *,
+        retreat_instructors:retreat_instructors!retreat_instructors_retreat_id_fkey (
+          instructor:instructors (* )
+        )
+      `)
+      .order('created_at', { ascending: false })
 
     if (params.featured === true) {
       query = query.eq('featured', true)
@@ -40,5 +67,23 @@ export async function fetchRetreats(params: FetchRetreatsParams = {}) {
     return { data: data ?? [], error: error ?? null }
   } catch (error: any) {
     return { data: [], error }
+  }
+}
+
+export async function createReview(payload: {
+  retreat_id: string,
+  rating: number,
+  comment: string,
+  author_name?: string | null
+}) {
+  try {
+    const { data, error } = await supabase
+      .from('reviews')
+      .insert([{ ...payload }])
+      .select('*')
+      .single()
+    return { data, error }
+  } catch (error: any) {
+    return { data: null, error }
   }
 }
