@@ -11,6 +11,7 @@ const resources = {
         destinations: 'Destinations',
         typeOfRetreat: 'Type of Retreat',
         yogaStyles: 'Yoga Styles',
+        retreats: 'Retreats',
         about: 'About',
         help: 'Help',
         featured: 'Featured',
@@ -74,9 +75,30 @@ const resources = {
         next: "Next",
         previous: "Previous",
         search: "Search",
-        noResults: "No results found",
+        noResults: "No retreats found",
         tryAgain: "Try Again",
         contactSupport: "Contact Support"
+      }
+      ,
+      retreatsPage: {
+        title: 'Find Your Perfect Retreat',
+        found: '{{count}} retreats found',
+        activeFilters: 'Active filters:',
+        placeholders: {
+          retreat: 'Search retreat title or description',
+          instructor: 'Search instructor',
+          location: 'Search location',
+          priceMin: 'Min $',
+          priceMax: 'Max $'
+        },
+        sort: {
+          relevance: 'Sort: Relevance',
+          priceAsc: 'Price: Low to High',
+          priceDesc: 'Price: High to Low',
+          newest: 'Newest'
+        },
+        submit: 'your request',
+        emptyHint: 'Try adjusting your search criteria or browse all retreats.'
       }
     }
   },
@@ -86,6 +108,7 @@ const resources = {
         destinations: 'Направления',
         typeOfRetreat: 'Тип ретрита',
         yogaStyles: 'Стили йоги',
+        retreats: 'Ретриты',
         about: 'О нас',
         help: 'Помощь',
         featured: 'Рекомендуемые',
@@ -149,9 +172,30 @@ const resources = {
         next: "Далее",
         previous: "Назад",
         search: "Поиск",
-        noResults: "Результаты не найдены",
+        noResults: "Ретриты не найдены",
         tryAgain: "Попробовать снова",
         contactSupport: "Связаться с поддержкой"
+      }
+      ,
+      retreatsPage: {
+        title: 'Найдите свой идеальный ретрит',
+        found: '{{count}} ретритов найдено',
+        activeFilters: 'Активные фильтры:',
+        placeholders: {
+          retreat: 'Поиск по названию или описанию ретрита',
+          instructor: 'Поиск инструктора',
+          location: 'Поиск по местоположению',
+          priceMin: 'Мин $',
+          priceMax: 'Макс $'
+        },
+        sort: {
+          relevance: 'Сортировка: По релевантности',
+          priceAsc: 'Цена: по возрастанию',
+          priceDesc: 'Цена: по убыванию',
+          newest: 'Сначала новые'
+        },
+        submit: 'your request',
+        emptyHint: 'Попробуйте изменить параметры поиска или просмотреть все ретриты.'
       }
     }
   }

@@ -1,4 +1,4 @@
--- Функция для создания профиля пользователя при регистрации
+од-- Функция для создания профиля пользователя при регистрации
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN

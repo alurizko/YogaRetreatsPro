@@ -10,7 +10,8 @@
     "register": "Register",
     "logout": "Logout",
     "profile": "Profile",
-    "dashboard": "Dashboard"
+    "dashboard": "Dashboard",
+    "retreats": "Retreats"
   },
   "hero": {
     "title": "Find Your Perfect Yoga Retreat",
@@ -146,5 +147,25 @@
     "followUs": "Follow Us",
     "newsletter": "Newsletter",
     "subscribeNewsletter": "Subscribe to our newsletter for the latest retreat updates"
+  },
+  "retreatsPage": {
+    "title": "Find Your Perfect Retreat",
+    "found": "{{count}} retreats found",
+    "activeFilters": "Active filters:",
+    "placeholders": {
+      "retreat": "Search retreat title or description",
+      "instructor": "Search instructor",
+      "location": "Search location",
+      "priceMin": "Min $",
+      "priceMax": "Max $"
+    },
+    "sort": {
+      "relevance": "Sort: Relevance",
+      "priceAsc": "Price: Low to High",
+      "priceDesc": "Price: High to Low",
+      "newest": "Newest"
+    },
+    "submit": "your request",
+    "emptyHint": "Try adjusting your search criteria or browse all retreats."
   }
 }

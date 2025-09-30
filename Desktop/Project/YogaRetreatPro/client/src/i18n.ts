@@ -21,6 +21,10 @@ i18n
             createAccount: 'Create account',
             retreats: 'Retreats'
           },
+          common: {
+            loading: 'Loading...',
+            noResults: 'No retreats found'
+          },
           home: {
             hero: {
               title: 'Find and book your perfect yoga retreat',
@@ -81,6 +85,26 @@ i18n
             company1: "We're the world's leading marketplace to explore and book unforgettable travel experiences.",
             company2: "We love to travel and connect you with local organizers to enrich your life with unforgettable trips.",
             copyright: 'Copyright © 2025 Tripaneer. All rights reserved.'
+          },
+          retreatsPage: {
+            title: 'Find Your Perfect Retreat',
+            found: '{{count}} retreats found',
+            activeFilters: 'Active filters:',
+            placeholders: {
+              retreat: 'Search retreat title or description',
+              instructor: 'Search instructor',
+              location: 'Search location',
+              priceMin: 'Min $',
+              priceMax: 'Max $'
+            },
+            sort: {
+              relevance: 'Sort: Relevance',
+              priceAsc: 'Price: Low to High',
+              priceDesc: 'Price: High to Low',
+              newest: 'Newest'
+            },
+            submit: 'your request',
+            emptyHint: 'Try adjusting your search criteria or browse all retreats.'
           }
         }
       },
@@ -96,6 +120,10 @@ i18n
             login: 'Войти',
             createAccount: 'Создать аккаунт',
             retreats: 'Ретриты'
+          },
+          common: {
+            loading: 'Загрузка...',
+            noResults: 'Ретриты не найдены'
           },
           home: {
             hero: {
@@ -157,6 +185,26 @@ i18n
             company1: 'Мы — ведущая площадка для поиска и бронирования незабываемых путешествий.',
             company2: 'Мы любим путешествовать и хотим поделиться этим с вами, соединяя вас с локальными организаторами.',
             copyright: 'Copyright © 2025 Tripaneer. Все права защищены.'
+          },
+          retreatsPage: {
+            title: 'Найдите свой идеальный ретрит',
+            found: '{{count}} ретритов найдено',
+            activeFilters: 'Активные фильтры:',
+            placeholders: {
+              retreat: 'Поиск по названию или описанию ретрита',
+              instructor: 'Поиск инструктора',
+              location: 'Поиск по местоположению',
+              priceMin: 'Мин $',
+              priceMax: 'Макс $'
+            },
+            sort: {
+              relevance: 'Сортировка: По релевантности',
+              priceAsc: 'Цена: по возрастанию',
+              priceDesc: 'Цена: по убыванию',
+              newest: 'Сначала новые'
+            },
+            submit: 'your request',
+            emptyHint: 'Попробуйте изменить параметры поиска или просмотреть все ретриты.'
           }
         }
       }

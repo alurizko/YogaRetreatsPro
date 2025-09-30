@@ -3,6 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom'
 import { Search, Filter, MapPin, Calendar, Users, Star, Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { fetchRetreats } from '@/lib/api'
+import { useTranslation } from 'react-i18next'
 
 // Shape from DB (retreats table); simplify typing for now
 interface RetreatRow {
@@ -16,10 +17,19 @@ interface RetreatRow {
 }
 
 const RetreatsPage = () => {
+  const { t } = useTranslation()
   const [searchParams] = useSearchParams()
   const [retreats, setRetreats] = useState<RetreatRow[]>([])
   const [filteredRetreats, setFilteredRetreats] = useState<RetreatRow[]>([])
   const [loading, setLoading] = useState(true)
+
+  // Local search form state
+  const [retreatQuery, setRetreatQuery] = useState('')
+  const [instructorQuery, setInstructorQuery] = useState('')
+  const [locationQuery, setLocationQuery] = useState('')
+  const [priceMin, setPriceMin] = useState<string>('')
+  const [priceMax, setPriceMax] = useState<string>('')
+  const [sort, setSort] = useState<'relevance' | 'price_asc' | 'price_desc' | 'created_desc'>('relevance')
 
   // Get filter parameters from URL
   const destination = searchParams.get('destination')
@@ -59,12 +69,41 @@ const RetreatsPage = () => {
     return filters
   }
 
+  const handleSubmitSearch = async () => {
+    setLoading(true)
+    const { data, error } = await fetchRetreats({
+      search: retreatQuery || undefined,
+      instructorName: (instructorQuery || '').trim() ? instructorQuery : (retreatQuery || undefined),
+      location: locationQuery || undefined,
+      priceMin: priceMin !== '' ? Number(priceMin) : undefined,
+      priceMax: priceMax !== '' ? Number(priceMax) : undefined,
+      sort: sort !== 'relevance' ? sort : undefined,
+    })
+    let rows = (data as unknown as RetreatRow[]) || []
+    // Client-side instructor name filter
+    if (instructorQuery.trim() || retreatQuery.trim()) {
+      const q = (instructorQuery.trim() || retreatQuery.trim()).toLowerCase()
+      rows = rows.filter(r =>
+        (r.retreat_instructors || []).some(ri => {
+          const fn = ri.instructor?.first_name?.toLowerCase() || ''
+          const ln = ri.instructor?.last_name?.toLowerCase() || ''
+          return `${fn} ${ln}`.includes(q) || fn.includes(q) || ln.includes(q)
+        })
+      )
+    }
+    if (!error) {
+      setRetreats(rows)
+      setFilteredRetreats(rows)
+    }
+    setLoading(false)
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading retreats...</p>
+          <p className="text-gray-600">{t('common.loading')}</p>
         </div>
       </div>
     )
@@ -76,13 +115,13 @@ const RetreatsPage = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            Find Your Perfect Retreat
+            {t('retreatsPage.title')}
           </h1>
           
           {/* Active Filters */}
           {getActiveFilters().length > 0 && (
             <div className="mb-4">
-              <p className="text-sm text-gray-600 mb-2">Active filters:</p>
+              <p className="text-sm text-gray-600 mb-2">{t('retreatsPage.activeFilters')}</p>
               <div className="flex flex-wrap gap-2">
                 {getActiveFilters().map((filter, index) => (
                   <span
@@ -97,27 +136,83 @@ const RetreatsPage = () => {
           )}
 
           <p className="text-gray-600">
-            {filteredRetreats.length} retreat{filteredRetreats.length !== 1 ? 's' : ''} found
+            {t('retreatsPage.found', { count: filteredRetreats.length })}
           </p>
         </div>
 
         {/* Search and Filter Bar */}
         <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            {/* Retreat keyword */}
+            <div className="md:col-span-2">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <input
                   type="text"
-                  placeholder="Search retreats..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  value={retreatQuery}
+                  onChange={(e) => setRetreatQuery(e.target.value)}
+                  placeholder={t('retreatsPage.placeholders.retreat')}
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 />
               </div>
             </div>
-            <Button variant="outline" className="flex items-center gap-2">
-              <Filter className="h-4 w-4" />
-              More Filters
-            </Button>
+
+            {/* Instructor */}
+            <input
+              type="text"
+              value={instructorQuery}
+              onChange={(e) => setInstructorQuery(e.target.value)}
+              placeholder={t('retreatsPage.placeholders.instructor')}
+              className="w-full pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            />
+
+            {/* Location */}
+            <input
+              type="text"
+              value={locationQuery}
+              onChange={(e) => setLocationQuery(e.target.value)}
+              placeholder={t('retreatsPage.placeholders.location')}
+              className="w-full pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            />
+
+            {/* Price range */}
+            <div className="flex gap-2">
+              <input
+                type="number"
+                min={0}
+                value={priceMin}
+                onChange={(e) => setPriceMin(e.target.value)}
+                placeholder={t('retreatsPage.placeholders.priceMin')}
+                className="w-full pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              />
+              <input
+                type="number"
+                min={0}
+                value={priceMax}
+                onChange={(e) => setPriceMax(e.target.value)}
+                placeholder={t('retreatsPage.placeholders.priceMax')}
+                className="w-full pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Sort */}
+            <select
+              className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+              value={sort}
+              onChange={(e) => setSort(e.target.value as any)}
+            >
+              <option value="relevance">{t('retreatsPage.sort.relevance')}</option>
+              <option value="price_asc">{t('retreatsPage.sort.priceAsc')}</option>
+              <option value="price_desc">{t('retreatsPage.sort.priceDesc')}</option>
+              <option value="created_desc">{t('retreatsPage.sort.newest')}</option>
+            </select>
+
+            {/* Submit */}
+            <div className="md:col-span-1 flex items-stretch">
+              <Button onClick={handleSubmitSearch} className="w-full bg-orange-500 hover:bg-orange-600 text-white">
+                {t('retreatsPage.submit')}
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -203,10 +298,10 @@ const RetreatsPage = () => {
               <Search className="h-12 w-12 mx-auto" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No retreats found
+              {t('common.noResults')}
             </h3>
             <p className="text-gray-600">
-              Try adjusting your search criteria or browse all retreats.
+              {t('retreatsPage.emptyHint')}
             </p>
           </div>
         )}
@@ -216,3 +311,4 @@ const RetreatsPage = () => {
 }
 
 export default RetreatsPage
+
